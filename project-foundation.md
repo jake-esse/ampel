@@ -109,11 +109,11 @@ Phase 1: Foundation (Days 1-2)
 * Add Capacitor
 * Configure Supabase client
 * Set up routing and basic UI shell
-* Install OAuth Capacitor plugins
+* Install OAuth Capacitor plugins (is this still necessary if we're using Supabase for social auth?)
 Phase 2: Authentication (Day 2-3)
 * Email/password signup/login
-* Apple Sign In (native Capacitor plugin)
-* Google Sign In (native Capacitor plugin)
+* Apple Sign In (through Supabase)
+* Google Sign In (through Supabase)
 * Session persistence
 * Biometric unlock (Capacitor plugin)
 * Profile creation on first login
@@ -141,7 +141,7 @@ Environment:
 * Android: Android Studio (for Android builds)
 Services:
 * Supabase project (existing)
-* Anthropic API key
+* xAI API key
 * Apple Developer account (for Sign In with Apple + TestFlight)
 * Google Cloud Console project (for Google Sign In)
 * Google Play Console (for testing)
