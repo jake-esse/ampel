@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import Login from './pages/Login'
 import Chat from './pages/Chat'
-import Conversations from './pages/Conversations'
 
 function App() {
   return (
@@ -18,10 +17,10 @@ function App() {
           }
         />
         <Route
-          path="/conversations"
+          path="/chat/:conversationId"
           element={
             <ProtectedRoute>
-              <Conversations />
+              <Chat />
             </ProtectedRoute>
           }
         />
