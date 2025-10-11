@@ -10,17 +10,17 @@ Core Features:
 * Message history persistence
 
 Success Criteria
-✅ User can sign up and login (email, Apple, or Google) ✅ Social login works natively on iOS and Android ✅ User can chat with Claude (streaming works) ✅ Conversations persist across sessions ✅ App feels native on iOS and Android ✅ iframe proof of concept works
+✅ User can sign up and login (email, Apple, or Google)✅ Social login works natively on iOS and Android✅ User can chat with Claude (streaming works)✅ Conversations persist across sessions✅ App feels native on iOS and Android✅ iframe proof of concept works
 
 TECH STACK
-Frontend:     Vite 6.x + React 18 + TypeScript
-Mobile:       Capacitor 7.x
-UI:           Tailwind CSS + shadcn/ui
-State:        React Context (minimal)
-Backend:      Supabase (PostgreSQL + Auth + Realtime)
-AI:           Vercel AI SDK + Claude API
-Routing:      React Router v7
-Auth:         Supabase Auth + @capacitor-community/google-auth + @capacitor/sign-in-with-apple
+- Vite 6 https://vite.dev/guide/
+- React 19 https://react.dev/versions https://react.dev/learn
+- TypeScript
+- Capacitor 7 (native shell) https://capacitorjs.com/docs
+- Supabase (backend) https://supabase.com/docs
+- Vercel AI SDK (AI integration) https://ai-sdk.dev/docs/introduction
+- Tailwind CSS + shadcn/ui
+- Auth:         Supabase Auth + Suppose-supported Apple and Google social auth
 
 Why This Stack:
 * Vite: Fast builds, perfect for SPAs, simple Capacitor integration
@@ -40,9 +40,10 @@ Native Shell (Capacitor)
 
 APIs:
   └── Supabase (auth, database, realtime)
-  └── Claude API (via Vercel AI SDK)
+  └── (xAI API, implemented using Vercel’s AI SDK, using ‘grok-4-fast-non-reasoning’ and ‘grok-4-fast-reasoning’; users should be able to toggle reasoning on and off, which switches between the models, and we should also implement web search, which should also toggle on and off, using the xAI API and the chosen models)
   └── Apple Sign In (native)
   └── Google Sign In (native)
+
 Database Schema (Supabase)
 -- Profiles (extends auth.users)
 profiles
@@ -69,6 +70,7 @@ messages
   - content (text)
   - tokens_used (int)
   - created_at (timestamp)
+
 PROJECT STRUCTURE
 /
 ├── src/
@@ -100,6 +102,7 @@ PROJECT STRUCTURE
 ├── capacitor.config.ts
 ├── vite.config.ts
 └── package.json
+
 DEVELOPMENT APPROACH
 Phase 1: Foundation (Days 1-2)
 * Initialize Vite + React + TypeScript
@@ -274,6 +277,7 @@ export async function signInWithGoogle() {
   
   return { data, error };
 }
+
 KEY PRINCIPLES
 1. Mobile-First: Design for mobile, ignore desktop
 2. Native OAuth: Use Capacitor plugins for best UX
@@ -288,6 +292,7 @@ Not building now, but designing for:
 * Apps SDK compatibility (MCP-based)
 * Sandboxed execution
 * Message passing between app and chat
+
 Day 7 Proof of Concept:
 * Add iframe container in chat
 * Load simple HTML app
@@ -295,38 +300,4 @@ Day 7 Proof of Concept:
 * Document architecture
 
 WHAT WE LEARNED (FROM PREVIOUS WORK)
-✅ Supabase is great - keep using it ✅ Vercel AI SDK works well - keep it ✅ Mobile-first is correct strategy ✅ iframes require web technology (Capacitor) ✅ Simple auth flows work better ✅ Chat apps don't need much complexity ✅ Social login is table stakes for mobile apps ❌ Next.js overkill for mobile wrapper ❌ Pure React Native doesn't support iframes well
-
-OAUTH SETUP CHECKLIST
-Before Starting Development:
-Apple:
-* [ ] Enable Sign In with Apple in Apple Developer Console
-* [ ] Create Service ID
-* [ ] Configure redirect URL in Apple Console
-* [ ] Add Sign In with Apple capability in Xcode
-* [ ] Configure in Supabase dashboard
-Google:
-* [ ] Create OAuth 2.0 credentials in Google Cloud Console
-* [ ] Create Web client ID (for Supabase)
-* [ ] Create iOS client ID
-* [ ] Create Android client ID
-* [ ] Configure OAuth consent screen
-* [ ] Add redirect URL to authorized redirects
-* [ ] Configure in Supabase dashboard
-Testing:
-* [ ] Test Apple Sign In on iOS device
-* [ ] Test Google Sign In on iOS device
-* [ ] Test Google Sign In on Android device
-* [ ] Test email/password flow
-* [ ] Test biometric unlock after social login
-* [ ] Test account switching
-NEXT STEPS
-1. Create new GitHub repo
-2. Set up new Claude project
-3. Set up OAuth credentials (Apple + Google)
-4. Configure Supabase auth providers
-5. Initialize Vite project with first prompt
-6. Start Day 1 development
-
-This is the complete project foundation with social authentication. Everything else builds from here.
-Ready to begin when you are.
+✅ Supabase is great - keep using it✅ Vercel AI SDK works well - keep it✅ Mobile-first is correct strategy✅ iframes require web technology (Capacitor)✅ Simple auth flows work better✅ Chat apps don't need much complexity✅ Social login is table stakes for mobile apps❌ Next.js overkill for mobile wrapper❌ Pure React Native doesn't support iframes well
