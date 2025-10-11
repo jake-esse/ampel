@@ -16,11 +16,11 @@ A cross-platform mobile application that provides AI-powered conversations with 
 
 ## 🚀 Tech Stack
 
-- **Frontend**: Vite 6 + React 18 + TypeScript
+- **Frontend**: Vite 6 + React 19 + TypeScript
 - **Mobile Shell**: Capacitor 7
 - **UI**: Tailwind CSS + shadcn/ui
 - **Backend**: Supabase (Auth, Database, Realtime)
-- **AI**: Vercel AI SDK + Claude API
+- **AI**: Vercel AI SDK + xAI API
 - **Auth**: Email/password + Apple Sign In + Google Sign In + Biometrics
 
 ## ✨ Features
