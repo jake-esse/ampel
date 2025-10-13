@@ -11,7 +11,8 @@ export default defineConfig({
     },
   },
   build: {
-    target: 'ES2020',
+    // Vite 7 defaults to 'baseline-widely-available' (browsers from ~2.5 years ago)
+    // Removed 'ES2020' as it's not compatible with lightningcss
     outDir: 'dist',
   },
   base: '/',
