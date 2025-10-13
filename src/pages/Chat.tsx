@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Menu, Plus } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useConversations } from '@/hooks/useConversations'
+import { impact } from '@/hooks/useHaptics'
+import { useBackButton } from '@/hooks/useBackButton'
+import { useKeyboard } from '@/hooks/useKeyboard'
 import { ChatInterface } from '@/components/chat/ChatInterface'
 import { StreamingTitle } from '@/components/chat/StreamingTitle'
 import { Drawer } from '@/components/layout/Drawer'
@@ -32,6 +35,9 @@ export default function Chat() {
     string | null
   >(null)
   const [isTitleStreaming, setIsTitleStreaming] = useState(false)
+
+  // Keyboard control for tap-to-dismiss
+  const { hideKeyboard } = useKeyboard()
 
   // Load current conversation title
   useEffect(() => {
@@ -158,6 +164,18 @@ export default function Chat() {
     [conversationId, updateConversation]
   )
 
+  // Android back button handling
+  useBackButton({
+    drawerOpen,
+    onCloseDrawer: () => {
+      impact('light')
+      setDrawerOpen(false)
+    },
+    inConversation: !!conversationId,
+    onNavigateBack: () => navigate('/chat'),
+    atRootLevel: !conversationId, // At root when no conversation is selected
+  })
+
   if (!user) {
     return null
   }
@@ -165,12 +183,23 @@ export default function Chat() {
   return (
     <div className="flex flex-col h-screen bg-gray-900">
       {/* Header */}
-      <header className="border-b border-gray-800 p-4 flex-shrink-0">
+      <header
+        onClick={hideKeyboard}
+        className="border-b border-gray-800 p-4 flex-shrink-0"
+        style={{
+          // iOS safe area support for top (notch/Dynamic Island)
+          paddingTop: 'max(1rem, env(safe-area-inset-top))',
+        }}
+      >
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           {/* Left: Hamburger menu */}
           <button
-            onClick={() => setDrawerOpen(true)}
-            className="p-2 hover:bg-gray-800 rounded-lg transition"
+            onClick={() => {
+              // Trigger light haptic when opening drawer (iOS only)
+              impact('light')
+              setDrawerOpen(true)
+            }}
+            className="p-2.5 hover:bg-gray-800 rounded-lg transition min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Open menu"
           >
             <Menu className="w-6 h-6 text-white" />
@@ -187,7 +216,7 @@ export default function Chat() {
           {/* Right: New chat button */}
           <button
             onClick={handleCreateNewConversation}
-            className="p-2 hover:bg-gray-800 rounded-lg transition"
+            className="p-2.5 hover:bg-gray-800 rounded-lg transition min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="New chat"
           >
             <Plus className="w-6 h-6 text-white" />
@@ -207,7 +236,11 @@ export default function Chat() {
       {/* Drawer */}
       <Drawer
         isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() => {
+          // Trigger light haptic when closing drawer (iOS only)
+          impact('light')
+          setDrawerOpen(false)
+        }}
         currentConversationId={conversationId || null}
         userEmail={user.email}
         onCreateNew={handleCreateNewConversation}

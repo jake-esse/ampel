@@ -9,6 +9,7 @@ import {
   convertDbMessagesToFrontend,
 } from '@/lib/database/messages'
 import { streamConversationTitle } from '@/lib/ai/streaming-titles'
+import { useKeyboard } from '@/hooks/useKeyboard'
 import type { Message, StreamingStatus } from '@/types/chat'
 
 interface ChatInterfaceProps {
@@ -32,6 +33,9 @@ export function ChatInterface({
   const [webSearch, setWebSearch] = useState(false)
   const [streamingStatus, setStreamingStatus] = useState<StreamingStatus>('idle')
   const [error, setError] = useState<string | null>(null)
+
+  // Keyboard handling for smooth layout adjustment
+  const { isVisible: keyboardVisible, keyboardHeight } = useKeyboard()
 
   // Load messages when conversationId changes
   useEffect(() => {
@@ -196,7 +200,16 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-900">
+    <div
+      className="flex flex-col h-full bg-gray-900"
+      style={{
+        // Apply keyboard height as bottom padding to push content up
+        // This ensures the input stays visible above the keyboard
+        paddingBottom: `${keyboardHeight}px`,
+        // Smooth transition matching iOS native keyboard timing (0.25s)
+        transition: 'padding-bottom 0.25s ease-out',
+      }}
+    >
       {/* Error banner */}
       {error && (
         <div className="bg-red-900/20 border-b border-red-900 px-4 py-3">
@@ -213,7 +226,7 @@ export function ChatInterface({
       )}
 
       {/* Message list */}
-      <MessageList messages={messages} />
+      <MessageList messages={messages} keyboardVisible={keyboardVisible} />
 
       {/* Input area with integrated controls */}
       <ChatInput

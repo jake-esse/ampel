@@ -13,7 +13,7 @@ Success Criteria
 ✅ User can sign up and login (email, Apple, or Google)✅ Social login works natively on iOS and Android✅ User can chat with Claude (streaming works)✅ Conversations persist across sessions✅ App feels native on iOS and Android✅ iframe proof of concept works
 
 TECH STACK
-- Vite 6 https://vite.dev/guide/
+- Vite 7 (with Rolldown) https://vite.dev/guide/
 - React 19 https://react.dev/versions https://react.dev/learn
 - TypeScript
 - Capacitor 7 (native shell) https://capacitorjs.com/docs
@@ -134,6 +134,7 @@ Phase 6: Build & Test (Day 6-7)
 * Build for iOS and Android
 * Test on devices
 * iframe proof of concept
+
 INITIAL SETUP REQUIREMENTS
 Environment:
 * Node.js 20+
