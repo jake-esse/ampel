@@ -83,7 +83,7 @@ export function Drawer({
           <h2 className="text-xl font-bold text-white">Ampel</h2>
           <button
             onClick={onClose}
-            className="p-2.5 hover:bg-gray-800 rounded-lg transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Close drawer"
           >
             <X className="w-6 h-6 text-gray-400" />
@@ -113,7 +113,7 @@ export function Drawer({
               <p className="text-sm text-gray-400 truncate">{userEmail}</p>
             </div>
             <button
-              className="p-2.5 hover:bg-gray-800 rounded-lg transition ml-3 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 ml-3 min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Settings"
             >
               <Settings className="w-5 h-5 text-gray-400" />

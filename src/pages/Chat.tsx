@@ -199,7 +199,7 @@ export default function Chat() {
               impact('light')
               setDrawerOpen(true)
             }}
-            className="p-2.5 hover:bg-gray-800 rounded-lg transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Open menu"
           >
             <Menu className="w-6 h-6 text-white" />
@@ -216,7 +216,7 @@ export default function Chat() {
           {/* Right: New chat button */}
           <button
             onClick={handleCreateNewConversation}
-            className="p-2.5 hover:bg-gray-800 rounded-lg transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="New chat"
           >
             <Plus className="w-6 h-6 text-white" />

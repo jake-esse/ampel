@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
-import { Plus, RefreshCw } from 'lucide-react'
+import { Plus, RefreshCw, MessageSquare } from 'lucide-react'
 import { ConversationItem } from './ConversationItem'
+import { ConversationSkeleton } from './ConversationSkeleton'
 import { useConversations } from '@/hooks/useConversations'
 import { impact } from '@/hooks/useHaptics'
 import type { Conversation } from '@/types/database'
@@ -81,7 +82,7 @@ export function ConversationList({
       <div className="px-4 py-4 border-b border-gray-700">
         <button
           onClick={onCreateNew}
-          className="w-full flex items-center gap-3 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition active:scale-98"
+          className="w-full flex items-center gap-3 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-all duration-150 active:scale-95"
         >
           <Plus className="w-5 h-5" />
           <span>New chat</span>
@@ -129,17 +130,30 @@ export function ConversationList({
         )}
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <p className="text-sm text-gray-400">Loading conversations...</p>
+          <div className="py-4">
+            {/* Show 4 skeleton placeholders while loading */}
+            <ConversationSkeleton />
+            <ConversationSkeleton />
+            <ConversationSkeleton />
+            <ConversationSkeleton />
           </div>
         ) : error ? (
           <div className="flex items-center justify-center py-8 px-4">
             <p className="text-sm text-red-400 text-center">{error}</p>
           </div>
         ) : conversations.length === 0 ? (
-          <div className="flex items-center justify-center py-8 px-4">
-            <p className="text-sm text-gray-400 text-center">
-              No conversations yet. Create your first chat!
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            {/* Icon */}
+            <div className="mb-4">
+              <MessageSquare className="w-12 h-12 text-gray-600" strokeWidth={1.5} />
+            </div>
+
+            {/* Message */}
+            <p className="text-base text-gray-400 text-center mb-2">
+              No conversations yet
+            </p>
+            <p className="text-sm text-gray-500 text-center">
+              Tap the + button above to start your first chat
             </p>
           </div>
         ) : (
