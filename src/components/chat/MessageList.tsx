@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Message } from './Message'
+import { EmptyState } from './EmptyState'
 import type { Message as MessageType } from '@/types/chat'
 
 interface MessageListProps {
@@ -9,6 +10,7 @@ interface MessageListProps {
 /**
  * Scrollable message list container
  * Auto-scrolls to bottom when new messages are added
+ * Shows welcoming empty state when no messages
  */
 export function MessageList({ messages }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -30,11 +32,9 @@ export function MessageList({ messages }: MessageListProps) {
         paddingTop: 'max(1rem, env(safe-area-inset-top))',
       }}
     >
-      {/* Messages */}
+      {/* Messages or empty state */}
       {messages.length === 0 ? (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-gray-500 text-sm">No messages yet. Start a conversation!</p>
-        </div>
+        <EmptyState />
       ) : (
         <>
           {messages.map((message) => (
