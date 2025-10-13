@@ -8,7 +8,6 @@ interface DrawerProps {
   isOpen: boolean
   onClose: () => void
   currentConversationId: string | null
-  userId: string
   userEmail: string | undefined
   onCreateNew: () => void
   onSelectConversation: (id: string) => void
@@ -23,7 +22,6 @@ export function Drawer({
   isOpen,
   onClose,
   currentConversationId,
-  userId,
   userEmail,
   onCreateNew,
   onSelectConversation,
@@ -90,7 +88,6 @@ export function Drawer({
         <div className="flex-1 overflow-hidden">
           <ConversationList
             currentConversationId={currentConversationId}
-            userId={userId}
             onCreateNew={() => {
               onCreateNew()
               onClose()

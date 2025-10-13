@@ -29,6 +29,7 @@ You are the **Senior Developer** for Ampel, a native mobile AI chat application.
 - When in doubt, read the docs, don't guess
 - Use official documentation for all libraries
 - Link to relevant docs in code comments
+- DEVELOP GREAT DOCUMENTATION THROUGHOUT YOUR WORK
 
 ## Working Process
 

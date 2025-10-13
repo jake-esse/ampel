@@ -8,12 +8,13 @@ import {
   loadMessages,
   convertDbMessagesToFrontend,
 } from '@/lib/database/messages'
-import { generateConversationTitle } from '@/lib/ai/titles'
+import { streamConversationTitle } from '@/lib/ai/streaming-titles'
 import type { Message, StreamingStatus } from '@/types/chat'
 
 interface ChatInterfaceProps {
   conversationId: string | null
-  onTitleGenerated?: () => void
+  onTitleStreaming?: (partialTitle: string) => void
+  onTitleComplete?: (finalTitle: string) => void
 }
 
 /**
@@ -22,7 +23,8 @@ interface ChatInterfaceProps {
  */
 export function ChatInterface({
   conversationId,
-  onTitleGenerated,
+  onTitleStreaming,
+  onTitleComplete,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
@@ -87,20 +89,36 @@ export function ChatInterface({
         // Don't show error to user - message is already displayed
       })
 
-      // Generate conversation title if this is the first message
+      // Generate conversation title if this is the first message (with streaming)
       if (isFirstMessage) {
-        generateConversationTitle(content)
-          .then((title) => {
-            return updateConversationTitle(conversationId, title)
-          })
-          .then(() => {
-            // Notify parent that title was generated
-            onTitleGenerated?.()
-          })
-          .catch((err) => {
+        // Run title generation in background
+        ;(async () => {
+          try {
+            let accumulatedTitle = ''
+
+            // Stream title generation
+            for await (const token of streamConversationTitle(content)) {
+              accumulatedTitle += token
+              // Notify parent of streaming progress
+              onTitleStreaming?.(accumulatedTitle)
+            }
+
+            // At this point, accumulatedTitle contains the final cleaned title
+            const finalTitle = accumulatedTitle
+
+            // Save final title to database
+            await updateConversationTitle(conversationId, finalTitle)
+
+            // Notify parent of completion
+            onTitleComplete?.(finalTitle)
+          } catch (err) {
             console.error('Failed to generate/save conversation title:', err)
-            // Don't show error to user - title generation is a background task
-          })
+            // Fallback to default title
+            const fallbackTitle = 'New Chat'
+            await updateConversationTitle(conversationId, fallbackTitle)
+            onTitleComplete?.(fallbackTitle)
+          }
+        })()
       }
 
       // Create placeholder for assistant message

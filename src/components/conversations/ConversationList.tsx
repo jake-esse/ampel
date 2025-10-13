@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { ConversationItem } from './ConversationItem'
-import { listUserConversations } from '@/lib/database/conversations'
+import { useConversations } from '@/hooks/useConversations'
 import type { Conversation } from '@/types/database'
 
 interface ConversationListProps {
   currentConversationId: string | null
-  userId: string
   onCreateNew: () => void
   onSelectConversation: (id: string) => void
   onLongPressConversation: (conversation: Conversation) => void
@@ -14,37 +12,15 @@ interface ConversationListProps {
 
 /**
  * List of user's conversations with create new button
- * Loads conversations from database and displays them
+ * Uses shared conversation context for real-time updates
  */
 export function ConversationList({
   currentConversationId,
-  userId,
   onCreateNew,
   onSelectConversation,
   onLongPressConversation,
 }: ConversationListProps) {
-  const [conversations, setConversations] = useState<Conversation[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // Load conversations when component mounts or userId changes
-  useEffect(() => {
-    async function loadConversations() {
-      try {
-        setIsLoading(true)
-        setError(null)
-        const data = await listUserConversations(userId)
-        setConversations(data)
-      } catch (err) {
-        console.error('Error loading conversations:', err)
-        setError('Failed to load conversations')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadConversations()
-  }, [userId])
+  const { conversations, isLoading, error } = useConversations()
 
   return (
     <div className="flex flex-col h-full">

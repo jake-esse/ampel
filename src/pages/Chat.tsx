@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Menu, Plus } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useConversations } from '@/hooks/useConversations'
 import { ChatInterface } from '@/components/chat/ChatInterface'
+import { StreamingTitle } from '@/components/chat/StreamingTitle'
 import { Drawer } from '@/components/layout/Drawer'
 import { DeleteMenu } from '@/components/conversations/DeleteMenu'
 import { DeleteConfirmation } from '@/components/conversations/DeleteConfirmation'
 import {
   createConversation,
-  listUserConversations,
   deleteConversation,
   getConversation,
 } from '@/lib/database/conversations'
@@ -18,6 +19,8 @@ export default function Chat() {
   const { user } = useAuth()
   const { conversationId } = useParams<{ conversationId: string }>()
   const navigate = useNavigate()
+  const { conversations, addConversation, updateConversation, removeConversation } =
+    useConversations()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [deleteMenuConversation, setDeleteMenuConversation] =
@@ -28,6 +31,7 @@ export default function Chat() {
   const [currentConversationTitle, setCurrentConversationTitle] = useState<
     string | null
   >(null)
+  const [isTitleStreaming, setIsTitleStreaming] = useState(false)
 
   // Load current conversation title
   useEffect(() => {
@@ -54,29 +58,28 @@ export default function Chat() {
     async function loadMostRecentConversation() {
       if (!user || conversationId) return
 
-      try {
-        const conversations = await listUserConversations(user.id)
-        if (conversations.length > 0) {
-          // Navigate to most recent conversation
-          navigate(`/chat/${conversations[0].id}`, { replace: true })
-        }
-        // If no conversations, stay on /chat with empty state
-      } catch (err) {
-        console.error('Error loading conversations:', err)
+      // Use conversations from context
+      if (conversations.length > 0) {
+        // Navigate to most recent conversation
+        navigate(`/chat/${conversations[0].id}`, { replace: true })
       }
+      // If no conversations, stay on /chat with empty state
     }
 
     loadMostRecentConversation()
-  }, [user, conversationId, navigate])
+  }, [user, conversationId, navigate, conversations])
 
   const handleCreateNewConversation = async () => {
     if (!user) return
 
     try {
       const newConversation = await createConversation(user.id)
+      // Add to context immediately for real-time updates
+      addConversation(newConversation)
       navigate(`/chat/${newConversation.id}`)
     } catch (err) {
       console.error('Error creating conversation:', err)
+      // TODO: Show error toast
     }
   }
 
@@ -102,12 +105,17 @@ export default function Chat() {
       setIsDeleting(true)
       await deleteConversation(deleteConfirmation.id)
 
+      // Remove from context immediately
+      removeConversation(deleteConfirmation.id)
+
       // If we deleted the current conversation, navigate away
       if (deleteConfirmation.id === conversationId) {
-        // Load most recent conversation or go to empty state
-        const conversations = await listUserConversations(user.id)
-        if (conversations.length > 0) {
-          navigate(`/chat/${conversations[0].id}`)
+        // Use conversations from context to find next conversation
+        const remainingConversations = conversations.filter(
+          (c) => c.id !== deleteConfirmation.id
+        )
+        if (remainingConversations.length > 0) {
+          navigate(`/chat/${remainingConversations[0].id}`)
         } else {
           navigate('/chat')
         }
@@ -116,23 +124,39 @@ export default function Chat() {
       setDeleteConfirmation(null)
     } catch (err) {
       console.error('Error deleting conversation:', err)
+      // TODO: Show error toast
     } finally {
       setIsDeleting(false)
     }
   }
 
-  const handleTitleGenerated = () => {
-    // Refresh conversation title
-    if (conversationId) {
-      getConversation(conversationId)
-        .then((conversation) => {
-          setCurrentConversationTitle(conversation?.title || null)
-        })
-        .catch((err) => {
-          console.error('Error refreshing conversation title:', err)
-        })
-    }
-  }
+  const handleTitleStreaming = useCallback(
+    (partialTitle: string) => {
+      // Update local state as title streams in
+      setCurrentConversationTitle(partialTitle)
+      setIsTitleStreaming(true)
+
+      // Also update context so drawer shows streaming title
+      if (conversationId) {
+        updateConversation(conversationId, { title: partialTitle })
+      }
+    },
+    [conversationId, updateConversation]
+  )
+
+  const handleTitleComplete = useCallback(
+    (finalTitle: string) => {
+      // Update with final title and stop streaming
+      setCurrentConversationTitle(finalTitle)
+      setIsTitleStreaming(false)
+
+      // Update context with final title
+      if (conversationId) {
+        updateConversation(conversationId, { title: finalTitle })
+      }
+    },
+    [conversationId, updateConversation]
+  )
 
   if (!user) {
     return null
@@ -152,9 +176,12 @@ export default function Chat() {
             <Menu className="w-6 h-6 text-white" />
           </button>
 
-          {/* Center: Title */}
+          {/* Center: Title with streaming animation */}
           <h1 className="text-lg font-semibold text-white truncate mx-4 flex-1 text-center">
-            {currentConversationTitle || 'Ampel Chat'}
+            <StreamingTitle
+              title={currentConversationTitle || 'Ampel Chat'}
+              isStreaming={isTitleStreaming}
+            />
           </h1>
 
           {/* Right: New chat button */}
@@ -172,7 +199,8 @@ export default function Chat() {
       <main className="flex-1 overflow-hidden">
         <ChatInterface
           conversationId={conversationId || null}
-          onTitleGenerated={handleTitleGenerated}
+          onTitleStreaming={handleTitleStreaming}
+          onTitleComplete={handleTitleComplete}
         />
       </main>
 
@@ -181,7 +209,6 @@ export default function Chat() {
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         currentConversationId={conversationId || null}
-        userId={user.id}
         userEmail={user.email}
         onCreateNew={handleCreateNewConversation}
         onSelectConversation={handleSelectConversation}
