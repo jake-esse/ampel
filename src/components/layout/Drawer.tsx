@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { X, Settings } from 'lucide-react'
 import { ConversationList } from '../conversations/ConversationList'
 import type { Conversation } from '@/types/database'
-import { cn } from '@/lib/utils'
+import { cn, getUserInitials, getAvatarColor } from '@/lib/utils'
 
 interface DrawerProps {
   isOpen: boolean
@@ -108,12 +108,29 @@ export function Drawer({
 
         {/* Profile section */}
         <div className="border-t border-gray-800 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-400 truncate">{userEmail}</p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {/* Avatar with initials */}
+              <div
+                className={cn(
+                  'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
+                  getAvatarColor(userEmail)
+                )}
+              >
+                <span className="text-sm font-semibold text-white">
+                  {getUserInitials(null, userEmail)}
+                </span>
+              </div>
+
+              {/* User info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-400 truncate">{userEmail}</p>
+              </div>
             </div>
+
+            {/* Settings button */}
             <button
-              className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 ml-3 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
               aria-label="Settings"
             >
               <Settings className="w-5 h-5 text-gray-400" />

@@ -104,7 +104,8 @@ export function ConversationItem({
       onTouchCancel={handleTouchCancel}
       onClick={handleClick}
       className={cn(
-        'w-full px-4 py-3.5 text-left transition-colors',
+        'w-full px-4 py-3.5 text-left transition-colors min-h-[48px]',
+        'flex items-center',
         'hover:bg-gray-700/50 active:bg-gray-700',
         isActive && 'bg-gray-700/70',
         isPressed && 'bg-gray-700'
