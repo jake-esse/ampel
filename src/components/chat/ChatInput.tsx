@@ -1,6 +1,7 @@
 import { useState, KeyboardEvent, useRef, useEffect } from 'react'
 import { SendHorizontal, Brain, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { impact } from '@/hooks/useHaptics'
 
 interface ChatInputProps {
   onSend: (content: string) => void
@@ -40,6 +41,9 @@ export function ChatInput({
   const handleSend = () => {
     const trimmed = input.trim()
     if (trimmed && !disabled) {
+      // Trigger haptic feedback for send action (iOS only)
+      impact('medium')
+
       onSend(trimmed)
       setInput('')
       // Reset textarea height
@@ -77,6 +81,11 @@ export function ChatInput({
             disabled={disabled}
             placeholder={placeholder}
             rows={1}
+            // Mobile keyboard configuration
+            enterKeyHint="send"
+            autoCorrect="on"
+            spellCheck={true}
+            autoCapitalize="sentences"
             className={cn(
               'flex-1 bg-gray-800 text-white rounded-2xl px-4 py-3',
               'resize-none overflow-hidden',
@@ -120,10 +129,13 @@ export function ChatInput({
           {/* Reasoning toggle */}
           {onReasoningToggle && (
             <button
-              onClick={onReasoningToggle}
+              onClick={() => {
+                impact('light')
+                onReasoningToggle()
+              }}
               disabled={disabled}
               className={cn(
-                'p-2 rounded-lg transition-all',
+                'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 reasoning
                   ? 'bg-primary-600/20 text-primary-400'
@@ -139,10 +151,13 @@ export function ChatInput({
           {/* Web search toggle */}
           {onWebSearchToggle && (
             <button
-              onClick={onWebSearchToggle}
+              onClick={() => {
+                impact('light')
+                onWebSearchToggle()
+              }}
               disabled={disabled}
               className={cn(
-                'p-2 rounded-lg transition-all',
+                'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 webSearch
                   ? 'bg-primary-600/20 text-primary-400'

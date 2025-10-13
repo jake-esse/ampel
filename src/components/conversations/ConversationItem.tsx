@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Conversation } from '@/types/database'
 import { cn } from '@/lib/utils'
+import { selection } from '@/hooks/useHaptics'
 
 interface ConversationItemProps {
   conversation: Conversation
@@ -39,6 +40,9 @@ export function ConversationItem({
 
     // Start long-press timer (500ms)
     timeoutRef.current = window.setTimeout(() => {
+      // Trigger selection haptic when long-press activates (iOS only)
+      selection()
+
       onLongPress()
       setIsPressed(false)
       touchStartRef.current = null

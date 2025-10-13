@@ -1,3 +1,5 @@
+import { impact } from '@/hooks/useHaptics'
+
 interface DeleteConfirmationProps {
   conversationTitle: string | null
   onConfirm: () => void
@@ -15,6 +17,12 @@ export function DeleteConfirmation({
   onCancel,
   isDeleting = false,
 }: DeleteConfirmationProps) {
+  const handleConfirm = () => {
+    // Trigger heavy haptic feedback for destructive action (iOS only)
+    impact('heavy')
+    onConfirm()
+  }
+
   return (
     <>
       {/* Overlay */}
@@ -24,7 +32,13 @@ export function DeleteConfirmation({
       />
 
       {/* Dialog */}
-      <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 animate-in zoom-in duration-200">
+      <div
+        className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 animate-in zoom-in duration-200"
+        style={{
+          // Ensure modal doesn't overlap with notch or home indicator
+          maxHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem)',
+        }}
+      >
         <div className="bg-gray-800 rounded-lg p-6 max-w-sm mx-auto border border-gray-700">
           {/* Title */}
           <h3 className="text-lg font-semibold text-white mb-2">
@@ -45,14 +59,14 @@ export function DeleteConfirmation({
             <button
               onClick={onCancel}
               disabled={isDeleting}
-              className="flex-1 px-4 py-2.5 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2.5 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
-              onClick={onConfirm}
+              onClick={handleConfirm}
               disabled={isDeleting}
-              className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
             </button>

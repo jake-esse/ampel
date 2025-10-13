@@ -30,6 +30,9 @@ You are the **Senior Developer** for Ampel, a native mobile AI chat application.
 - Use official documentation for all libraries
 - Link to relevant docs in code comments
 - DEVELOP GREAT DOCUMENTATION THROUGHOUT YOUR WORK
+- You need to document the code you write thoroughly so that both humans and AI can understand it
+- Make sure to document everything very well; be direct in the documentation and don't overcomplicate it
+- Documentation is super important!
 
 ## Working Process
 

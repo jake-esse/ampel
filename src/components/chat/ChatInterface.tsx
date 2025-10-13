@@ -9,6 +9,8 @@ import {
   convertDbMessagesToFrontend,
 } from '@/lib/database/messages'
 import { streamConversationTitle } from '@/lib/ai/streaming-titles'
+import { useKeyboard } from '@/hooks/useKeyboard'
+import { useToast } from '@/hooks/useToast'
 import type { Message, StreamingStatus } from '@/types/chat'
 
 interface ChatInterfaceProps {
@@ -31,7 +33,12 @@ export function ChatInterface({
   const [reasoning, setReasoning] = useState(false)
   const [webSearch, setWebSearch] = useState(false)
   const [streamingStatus, setStreamingStatus] = useState<StreamingStatus>('idle')
-  const [error, setError] = useState<string | null>(null)
+
+  // Keyboard handling for smooth layout adjustment
+  const { isVisible: keyboardVisible, keyboardHeight } = useKeyboard()
+
+  // Toast notifications for errors
+  const { showToast } = useToast()
 
   // Load messages when conversationId changes
   useEffect(() => {
@@ -62,12 +69,12 @@ export function ChatInterface({
   const handleSendMessage = async (content: string) => {
     // Conversation must exist before sending messages
     if (!conversationId) {
-      setError('No conversation selected')
+      showToast({
+        type: 'error',
+        message: 'No conversation selected'
+      })
       return
     }
-
-    // Clear any previous errors
-    setError(null)
 
     // Check if this is the first message (for title generation)
     const isFirstMessage = messages.length === 0
@@ -185,7 +192,13 @@ export function ChatInterface({
     } catch (err) {
       console.error('Streaming error:', err)
       const errorMsg = getErrorMessage(err)
-      setError(errorMsg)
+
+      // Show error toast
+      showToast({
+        type: 'error',
+        message: errorMsg
+      })
+
       setStreamingStatus('error')
 
       // Remove the placeholder message on error
@@ -196,24 +209,18 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-900">
-      {/* Error banner */}
-      {error && (
-        <div className="bg-red-900/20 border-b border-red-900 px-4 py-3">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
-            <p className="text-sm text-red-400">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="text-red-400 hover:text-red-300 text-sm font-medium"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      )}
-
+    <div
+      className="flex flex-col h-full bg-gray-900"
+      style={{
+        // Apply keyboard height as bottom padding to push content up
+        // This ensures the input stays visible above the keyboard
+        paddingBottom: `${keyboardHeight}px`,
+        // Smooth transition matching iOS native keyboard timing (0.25s)
+        transition: 'padding-bottom 0.25s ease-out',
+      }}
+    >
       {/* Message list */}
-      <MessageList messages={messages} />
+      <MessageList messages={messages} keyboardVisible={keyboardVisible} />
 
       {/* Input area with integrated controls */}
       <ChatInput
