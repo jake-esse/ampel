@@ -64,8 +64,8 @@ A cross-platform mobile application that provides AI-powered conversations with 
 
 ## 📋 Prerequisites
 
-- Node.js 20+
-- npm or yarn
+- Node.js 22.20.0+ (LTS)
+- npm 10+ or yarn
 - **iOS Development:**
   - macOS with Xcode 15+
   - Active Apple Developer account
@@ -80,8 +80,15 @@ A cross-platform mobile application that provides AI-powered conversations with 
 ```bash
 git clone <repo-url>
 cd ampel-mobile
+
+# If using nvm, switch to Node.js 22.20.0
+# (The .nvmrc file will automatically set the correct version)
+nvm use
+
 npm install
 ```
+
+> **Note**: This project requires Node.js 22.20.0 or higher. The `.nvmrc` and `.node-version` files are included for automatic version switching with nvm or other Node version managers.
 
 ### 2. Environment Variables
 
