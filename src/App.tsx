@@ -3,11 +3,21 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { ConversationProvider } from './contexts/ConversationContext'
+import { ToastProvider } from './contexts/ToastContext'
+import { ToastContainer } from './components/ui/ToastContainer'
 import { isNativePlatform, isAndroid } from './hooks/usePlatform'
+import { useNetworkStatus } from './hooks/useNetworkStatus'
 import Login from './pages/Login'
 import Chat from './pages/Chat'
 
-function App() {
+/**
+ * Inner app component with network monitoring
+ * Must be inside ToastProvider to use toast notifications
+ */
+function AppContent() {
+  // Initialize network status monitoring (shows toasts on connection changes)
+  useNetworkStatus()
+
   // Initialize status bar on mount
   useEffect(() => {
     async function initializeStatusBar() {
@@ -33,29 +43,40 @@ function App() {
   }, [])
 
   return (
+    <ConversationProvider>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat/:conversationId"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {/* Toast notifications */}
+      <ToastContainer />
+    </ConversationProvider>
+  )
+}
+
+function App() {
+  return (
     <BrowserRouter>
-      <ConversationProvider>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chat/:conversationId"
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </ConversationProvider>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </BrowserRouter>
   )
 }
