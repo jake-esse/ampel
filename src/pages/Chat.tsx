@@ -193,7 +193,7 @@ export default function Chat() {
         {/* Header */}
         <header
           onClick={hideKeyboard}
-          className="bg-[#F7F6F3] rounded-b-3xl px-4 pt-4 pb-2 flex-shrink-0 border-b-[0.5px] border-[#E5E3DD]"
+          className="bg-[#F7F6F3] rounded-b-3xl px-4 pt-4 pb-1 flex-shrink-0 border-b-[0.5px] border-[#E5E3DD]"
           style={{
             // iOS safe area support for top (notch/Dynamic Island)
             paddingTop: 'max(1rem, env(safe-area-inset-top))',

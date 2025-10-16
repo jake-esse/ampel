@@ -84,7 +84,7 @@ export function MessageList({ messages, keyboardVisible = false }: MessageListPr
     <div
       ref={containerRef}
       onClick={handleTapToDismiss}
-      className="flex-1 overflow-y-auto px-4 py-4"
+      className="flex-1 overflow-y-auto px-2 py-4"
       style={{
         // iOS safe area support for top (notch/dynamic island)
         paddingTop: 'max(1rem, env(safe-area-inset-top))',

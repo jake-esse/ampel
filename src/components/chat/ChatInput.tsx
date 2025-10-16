@@ -62,12 +62,11 @@ export function ChatInput({
   }
 
   return (
-    <div className="px-4 pb-3 pt-3"
+    <div
+      className="px-2 pb-2 pt-2 bg-[#F7F6F3]"
       style={{
         // iOS safe area support for bottom (home indicator)
-        // ChatInterface handles keyboard offset via paddingBottom on parent
-        // We add safe area inset as margin to keep input above home indicator
-        marginBottom: 'env(safe-area-inset-bottom)',
+        paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
       }}
     >
       <div className="max-w-4xl mx-auto">
@@ -118,16 +117,16 @@ export function ChatInput({
                   }}
                   disabled={disabled}
                   className={cn(
-                    'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
+                    'w-8 h-8 rounded-full transition-all duration-150 active:scale-95 flex items-center justify-center',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                     reasoning
-                      ? 'bg-primary-600/20 text-primary-600'
+                      ? 'bg-primary-600 text-white'
                       : 'text-gray-500 hover:bg-gray-100'
                   )}
                   aria-label="Toggle reasoning mode"
                   title="Reasoning"
                 >
-                  <Brain className="w-5 h-5" />
+                  <Brain className="w-4 h-4" />
                 </button>
               )}
 
@@ -140,16 +139,16 @@ export function ChatInput({
                   }}
                   disabled={disabled}
                   className={cn(
-                    'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
+                    'w-8 h-8 rounded-full transition-all duration-150 active:scale-95 flex items-center justify-center',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                     webSearch
-                      ? 'bg-primary-600/20 text-primary-600'
+                      ? 'bg-primary-600 text-white'
                       : 'text-gray-500 hover:bg-gray-100'
                   )}
                   aria-label="Toggle web search"
                   title="Web Search"
                 >
-                  <Globe className="w-5 h-5" />
+                  <Globe className="w-4 h-4" />
                 </button>
               )}
             </div>
