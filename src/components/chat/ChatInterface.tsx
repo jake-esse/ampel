@@ -209,7 +209,15 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div
+      className="flex flex-col h-full"
+      style={{
+        // Reduce available height when keyboard is open
+        paddingBottom: `${keyboardHeight}px`,
+        // Smooth transition matching iOS native keyboard timing
+        transition: 'padding-bottom 0.25s ease-out',
+      }}
+    >
       {/* Message list */}
       <MessageList messages={messages} keyboardVisible={keyboardVisible} />
 
@@ -223,7 +231,6 @@ export function ChatInterface({
         onWebSearchToggle={() => setWebSearch(!webSearch)}
         autoFocus={messages.length === 0}
         placeholder={messages.length === 0 ? 'How can I help?' : 'Type a message...'}
-        keyboardHeight={keyboardHeight}
       />
     </div>
   )
