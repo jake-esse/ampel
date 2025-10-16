@@ -63,7 +63,7 @@ export function ChatInput({
 
   return (
     <div
-      className="px-3 pb-2 pt-2 bg-[#F7F6F3]"
+      className="px-3 pb-2 pt-2"
       style={{
         // iOS safe area support for bottom (home indicator)
         paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',

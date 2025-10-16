@@ -209,18 +209,18 @@ export function ChatInterface({
   }
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{
-        // Apply keyboard height as bottom padding to push content up
-        // This ensures the input stays visible above the keyboard
-        paddingBottom: `${keyboardHeight}px`,
-        // Smooth transition matching iOS native keyboard timing (0.25s)
-        transition: 'padding-bottom 0.25s ease-out',
-      }}
-    >
-      {/* Message list */}
-      <MessageList messages={messages} keyboardVisible={keyboardVisible} />
+    <div className="flex flex-col h-full">
+      {/* Message list - adjusts bottom margin when keyboard appears */}
+      <div
+        style={{
+          flex: 1,
+          marginBottom: `${keyboardHeight}px`,
+          transition: 'margin-bottom 0.25s ease-out',
+          overflow: 'hidden',
+        }}
+      >
+        <MessageList messages={messages} keyboardVisible={keyboardVisible} />
+      </div>
 
       {/* Input area with integrated controls */}
       <ChatInput
