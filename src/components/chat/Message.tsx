@@ -22,8 +22,8 @@ export function Message({ message }: MessageProps) {
   return (
     <div
       className={cn(
-        'flex flex-col gap-1 max-w-[80%] mb-4',
-        isUser ? 'ml-auto items-end' : 'mr-auto items-start',
+        'flex flex-col gap-1 mb-4',
+        isUser ? 'ml-auto items-end max-w-[85%]' : 'mr-auto items-start max-w-[90%]',
         // Fade-in animation for new messages
         isNew && isUser && 'animate-in fade-in slide-in-from-right-4 duration-200',
         isNew && isAssistant && 'animate-in fade-in slide-in-from-left-4 duration-200'
@@ -40,7 +40,7 @@ export function Message({ message }: MessageProps) {
       >
         {/* User messages: plain text */}
         {isUser && (
-          <p className="text-base leading-relaxed whitespace-pre-wrap">
+          <p className="text-lg leading-snug whitespace-pre-wrap">
             {message.content}
           </p>
         )}

@@ -14,7 +14,7 @@ interface MarkdownMessageProps {
  */
 export function MarkdownMessage({ content }: MarkdownMessageProps) {
   return (
-    <div className="markdown-content text-lg leading-relaxed">
+    <div className="markdown-content text-lg leading-snug">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize]}

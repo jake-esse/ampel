@@ -62,12 +62,12 @@ export function ChatInput({
   }
 
   return (
-    <div
-      className="px-4 py-3"
+    <div className="px-4 pb-3 pt-3"
       style={{
         // iOS safe area support for bottom (home indicator)
-        // ChatInterface handles keyboard offset, so we only need safe area here
-        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+        // ChatInterface handles keyboard offset via paddingBottom on parent
+        // We add safe area inset as margin to keep input above home indicator
+        marginBottom: 'env(safe-area-inset-bottom)',
       }}
     >
       <div className="max-w-4xl mx-auto">
