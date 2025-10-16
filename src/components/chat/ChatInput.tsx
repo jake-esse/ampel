@@ -12,6 +12,7 @@ interface ChatInputProps {
   onWebSearchToggle?: () => void
   autoFocus?: boolean
   placeholder?: string
+  keyboardHeight?: number
 }
 
 /**
@@ -27,6 +28,7 @@ export function ChatInput({
   onWebSearchToggle,
   autoFocus = false,
   placeholder = 'Type a message...',
+  keyboardHeight = 0,
 }: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -67,6 +69,10 @@ export function ChatInput({
       style={{
         // iOS safe area support for bottom (home indicator)
         paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+        // Move input up with keyboard
+        transform: `translateY(-${keyboardHeight}px)`,
+        // Smooth transition matching iOS native keyboard timing
+        transition: 'transform 0.25s ease-out',
       }}
     >
       <div className="max-w-4xl mx-auto">

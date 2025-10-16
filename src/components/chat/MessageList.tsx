@@ -7,7 +7,6 @@ import type { Message as MessageType } from '@/types/chat'
 interface MessageListProps {
   messages: MessageType[]
   keyboardVisible?: boolean
-  keyboardHeight?: number
 }
 
 /**
@@ -18,11 +17,7 @@ interface MessageListProps {
  * - Does NOT scroll if user is reading older messages
  * Shows welcoming empty state when no messages
  */
-export function MessageList({
-  messages,
-  keyboardVisible = false,
-  keyboardHeight = 0
-}: MessageListProps) {
+export function MessageList({ messages, keyboardVisible = false }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [wasAtBottom, setWasAtBottom] = useState(true)
@@ -93,10 +88,8 @@ export function MessageList({
       style={{
         // iOS safe area support for top (notch/dynamic island)
         paddingTop: 'max(1rem, env(safe-area-inset-top))',
-        // Add bottom padding when keyboard is open to keep messages visible
-        paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '1rem',
-        // Smooth transition matching iOS native keyboard timing
-        transition: 'padding-bottom 0.25s ease-out',
+        // Standard bottom padding (input handles keyboard spacing)
+        paddingBottom: '1rem',
       }}
     >
       {/* Messages or empty state */}

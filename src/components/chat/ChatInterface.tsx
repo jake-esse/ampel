@@ -211,11 +211,7 @@ export function ChatInterface({
   return (
     <div className="flex flex-col h-full">
       {/* Message list */}
-      <MessageList
-        messages={messages}
-        keyboardVisible={keyboardVisible}
-        keyboardHeight={keyboardHeight}
-      />
+      <MessageList messages={messages} keyboardVisible={keyboardVisible} />
 
       {/* Input area with integrated controls */}
       <ChatInput
@@ -227,6 +223,7 @@ export function ChatInterface({
         onWebSearchToggle={() => setWebSearch(!webSearch)}
         autoFocus={messages.length === 0}
         placeholder={messages.length === 0 ? 'How can I help?' : 'Type a message...'}
+        keyboardHeight={keyboardHeight}
       />
     </div>
   )
