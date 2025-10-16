@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Menu, Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useConversations } from '@/hooks/useConversations'
 import { impact } from '@/hooks/useHaptics'
@@ -181,57 +182,65 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900">
-      {/* Header */}
-      <header
-        onClick={hideKeyboard}
-        className="border-b border-gray-800 p-4 flex-shrink-0"
-        style={{
-          // iOS safe area support for top (notch/Dynamic Island)
-          paddingTop: 'max(1rem, env(safe-area-inset-top))',
-        }}
+    <div className="flex flex-col h-screen bg-[#F7F6F3] overflow-hidden">
+      {/* Sliding content wrapper - pushes right when drawer opens */}
+      <div
+        className={cn(
+          "flex flex-col flex-1 overflow-hidden transition-transform duration-300 ease-in-out",
+          drawerOpen && "translate-x-[75%]"
+        )}
       >
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          {/* Left: Hamburger menu */}
-          <button
-            onClick={() => {
-              // Trigger light haptic when opening drawer (iOS only)
-              impact('light')
-              setDrawerOpen(true)
-            }}
-            className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
-            aria-label="Open menu"
-          >
-            <Menu className="w-6 h-6 text-white" />
-          </button>
+        {/* Header */}
+        <header
+          onClick={hideKeyboard}
+          className="bg-[#F7F6F3] rounded-b-3xl px-4 pt-4 pb-2 flex-shrink-0 border-b-[0.5px] border-[#E5E3DD]"
+          style={{
+            // iOS safe area support for top (notch/Dynamic Island)
+            paddingTop: 'max(1rem, env(safe-area-inset-top))',
+          }}
+        >
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            {/* Left: Hamburger menu */}
+            <button
+              onClick={() => {
+                // Trigger light haptic when opening drawer (iOS only)
+                impact('light')
+                setDrawerOpen(true)
+              }}
+              className="p-2.5 hover:bg-gray-100 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5 text-gray-900" />
+            </button>
 
-          {/* Center: Title with streaming animation */}
-          <h1 className="text-lg font-semibold text-white truncate mx-4 flex-1 text-center">
-            <StreamingTitle
-              title={currentConversationTitle || 'Ampel Chat'}
-              isStreaming={isTitleStreaming}
-            />
-          </h1>
+            {/* Center: Title with streaming animation */}
+            <h1 className="text-xl font-semibold font-serif text-gray-900 truncate mx-4 flex-1 text-center">
+              <StreamingTitle
+                title={currentConversationTitle || 'Ampel Chat'}
+                isStreaming={isTitleStreaming}
+              />
+            </h1>
 
-          {/* Right: New chat button */}
-          <button
-            onClick={handleCreateNewConversation}
-            className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
-            aria-label="New chat"
-          >
-            <Plus className="w-6 h-6 text-white" />
-          </button>
-        </div>
-      </header>
+            {/* Right: New chat button */}
+            <button
+              onClick={handleCreateNewConversation}
+              className="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center transition-all duration-150 active:scale-95"
+              aria-label="New chat"
+            >
+              <Plus className="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+        </header>
 
-      {/* Chat interface */}
-      <main className="flex-1 overflow-hidden">
-        <ChatInterface
-          conversationId={conversationId || null}
-          onTitleStreaming={handleTitleStreaming}
-          onTitleComplete={handleTitleComplete}
-        />
-      </main>
+        {/* Chat interface */}
+        <main className="flex-1 overflow-hidden">
+          <ChatInterface
+            conversationId={conversationId || null}
+            onTitleStreaming={handleTitleStreaming}
+            onTitleComplete={handleTitleComplete}
+          />
+        </main>
+      </div>
 
       {/* Drawer */}
       <Drawer

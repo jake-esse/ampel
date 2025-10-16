@@ -210,7 +210,7 @@ export function ChatInterface({
 
   return (
     <div
-      className="flex flex-col h-full bg-gray-900"
+      className="flex flex-col h-full"
       style={{
         // Apply keyboard height as bottom padding to push content up
         // This ensures the input stays visible above the keyboard

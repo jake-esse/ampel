@@ -37,7 +37,7 @@ export const markdownComponents: Components = {
 
     // This is a fenced code block - render as code
     return (
-      <pre {...props} className="bg-gray-800 text-gray-100 p-4 rounded-lg my-3 overflow-x-auto">
+      <pre {...props} className="bg-gray-100 text-gray-800 p-4 rounded-lg my-3 overflow-x-auto">
         {children}
       </pre>
     )
@@ -58,7 +58,7 @@ export const markdownComponents: Components = {
     return (
       <code
         {...props}
-        className="bg-gray-800 text-gray-100 px-1.5 py-0.5 rounded text-sm font-mono"
+        className="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-sm font-mono"
       >
         {children}
       </code>
@@ -72,22 +72,22 @@ export const markdownComponents: Components = {
 
   // Headings
   h1: ({ node, ...props }) => (
-    <h1 {...props} className="text-2xl font-bold mb-3 mt-4 first:mt-0" />
+    <h1 {...props} className="text-3xl font-serif font-bold mb-4 mt-5 first:mt-0" />
   ),
   h2: ({ node, ...props }) => (
-    <h2 {...props} className="text-xl font-bold mb-3 mt-4 first:mt-0" />
+    <h2 {...props} className="text-2xl font-serif font-semibold mb-3 mt-4 first:mt-0" />
   ),
   h3: ({ node, ...props }) => (
-    <h3 {...props} className="text-lg font-bold mb-2 mt-3 first:mt-0" />
+    <h3 {...props} className="text-xl font-serif font-semibold mb-3 mt-4 first:mt-0" />
   ),
   h4: ({ node, ...props }) => (
-    <h4 {...props} className="text-base font-bold mb-2 mt-3 first:mt-0" />
+    <h4 {...props} className="text-lg font-sans font-semibold mb-2 mt-3 first:mt-0" />
   ),
   h5: ({ node, ...props }) => (
-    <h5 {...props} className="text-sm font-bold mb-2 mt-2 first:mt-0" />
+    <h5 {...props} className="text-base font-sans font-semibold mb-2 mt-3 first:mt-0" />
   ),
   h6: ({ node, ...props }) => (
-    <h6 {...props} className="text-xs font-bold mb-2 mt-2 first:mt-0" />
+    <h6 {...props} className="text-sm font-sans font-medium mb-2 mt-2 first:mt-0" />
   ),
 
   // Lists
@@ -103,7 +103,7 @@ export const markdownComponents: Components = {
   blockquote: ({ node, ...props }) => (
     <blockquote
       {...props}
-      className="border-l-4 border-gray-600 pl-4 py-1 my-3 italic text-gray-600"
+      className="border-l-4 border-gray-600 pl-4 py-1 my-3 italic font-serif text-gray-600"
     />
   ),
 
@@ -131,8 +131,8 @@ export const markdownComponents: Components = {
   td: ({ node, ...props }) => <td {...props} className="px-3 py-2" />,
 
   // Strong (bold)
-  strong: ({ node, ...props }) => <strong {...props} className="font-bold" />,
+  strong: ({ node, ...props }) => <strong {...props} className="font-semibold" />,
 
   // Emphasis (italic)
-  em: ({ node, ...props }) => <em {...props} className="italic" />,
+  em: ({ node, ...props }) => <em {...props} className="italic font-serif" />,
 }

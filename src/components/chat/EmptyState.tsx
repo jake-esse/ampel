@@ -13,10 +13,10 @@ export function EmptyState() {
       </div>
 
       {/* Greeting */}
-      <h2 className="text-2xl font-semibold text-white mb-2">Hi there!</h2>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-2">Hi there!</h2>
 
       {/* Subtitle */}
-      <p className="text-gray-400 text-base max-w-sm">
+      <p className="text-gray-600 text-base max-w-sm">
         Start a conversation by typing a message below. I'm here to help with anything you need.
       </p>
     </div>

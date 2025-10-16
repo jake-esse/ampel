@@ -1,5 +1,5 @@
 import { useState, KeyboardEvent, useRef, useEffect } from 'react'
-import { SendHorizontal, Brain, Globe } from 'lucide-react'
+import { ArrowUp, Brain, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { impact } from '@/hooks/useHaptics'
 
@@ -63,15 +63,16 @@ export function ChatInput({
 
   return (
     <div
-      className="border-t border-gray-800 bg-gray-900 px-4 py-3"
+      className="px-4 py-3"
       style={{
         // iOS safe area support for bottom (home indicator)
+        // ChatInterface handles keyboard offset, so we only need safe area here
         paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
       }}
     >
       <div className="max-w-4xl mx-auto">
-        {/* Input row */}
-        <div className="flex items-end gap-2 mb-2">
+        {/* Input container with solid background */}
+        <div className="bg-[#FDFCFA] rounded-3xl shadow-lg overflow-hidden">
           {/* Textarea */}
           <textarea
             ref={textareaRef}
@@ -87,12 +88,12 @@ export function ChatInput({
             spellCheck={true}
             autoCapitalize="sentences"
             className={cn(
-              'flex-1 bg-gray-800 text-white rounded-2xl px-4 py-3',
+              'w-full bg-transparent text-gray-900 px-4 pt-4 pb-2',
               'resize-none overflow-hidden',
-              'placeholder:text-gray-500',
-              'focus:outline-none focus:ring-2 focus:ring-primary-500',
+              'placeholder:text-gray-400',
+              'border-0 focus:outline-none focus:ring-0',
               'disabled:opacity-50 disabled:cursor-not-allowed',
-              'min-h-[48px] max-h-[120px]'
+              'min-h-[56px] max-h-[160px]'
             )}
             style={{
               // Auto-expand based on content
@@ -101,74 +102,76 @@ export function ChatInput({
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement
               target.style.height = 'auto'
-              target.style.height = `${Math.min(target.scrollHeight, 120)}px`
+              target.style.height = `${Math.min(target.scrollHeight, 160)}px`
             }}
           />
 
-          {/* Send button */}
-          <button
-            onClick={handleSend}
-            disabled={disabled || !input.trim()}
-            className={cn(
-              'flex-shrink-0 w-12 h-12 rounded-full',
-              'flex items-center justify-center',
-              'bg-primary-600 text-white',
-              'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'active:scale-95',
-              !disabled && input.trim() && 'hover:bg-primary-700'
-            )}
-            aria-label="Send message"
-          >
-            <SendHorizontal className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Controls row */}
-        <div className="flex items-center gap-2 px-2">
-          {/* Reasoning toggle */}
-          {onReasoningToggle && (
-            <button
-              onClick={() => {
-                impact('light')
-                onReasoningToggle()
-              }}
-              disabled={disabled}
-              className={cn(
-                'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                reasoning
-                  ? 'bg-primary-600/20 text-primary-400'
-                  : 'text-gray-500 hover:bg-gray-800'
+          {/* Controls row - buttons at bottom */}
+          <div className="flex items-center justify-between px-3 pb-3 pt-1">
+            <div className="flex items-center gap-2">
+              {/* Reasoning toggle */}
+              {onReasoningToggle && (
+                <button
+                  onClick={() => {
+                    impact('light')
+                    onReasoningToggle()
+                  }}
+                  disabled={disabled}
+                  className={cn(
+                    'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
+                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    reasoning
+                      ? 'bg-primary-600/20 text-primary-600'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  )}
+                  aria-label="Toggle reasoning mode"
+                  title="Reasoning"
+                >
+                  <Brain className="w-5 h-5" />
+                </button>
               )}
-              aria-label="Toggle reasoning mode"
-              title="Reasoning"
-            >
-              <Brain className="w-5 h-5" />
-            </button>
-          )}
 
-          {/* Web search toggle */}
-          {onWebSearchToggle && (
-            <button
-              onClick={() => {
-                impact('light')
-                onWebSearchToggle()
-              }}
-              disabled={disabled}
-              className={cn(
-                'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                webSearch
-                  ? 'bg-primary-600/20 text-primary-400'
-                  : 'text-gray-500 hover:bg-gray-800'
+              {/* Web search toggle */}
+              {onWebSearchToggle && (
+                <button
+                  onClick={() => {
+                    impact('light')
+                    onWebSearchToggle()
+                  }}
+                  disabled={disabled}
+                  className={cn(
+                    'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
+                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    webSearch
+                      ? 'bg-primary-600/20 text-primary-600'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  )}
+                  aria-label="Toggle web search"
+                  title="Web Search"
+                >
+                  <Globe className="w-5 h-5" />
+                </button>
               )}
-              aria-label="Toggle web search"
-              title="Web Search"
+            </div>
+
+            {/* Send button */}
+            <button
+              onClick={handleSend}
+              disabled={disabled || !input.trim()}
+              className={cn(
+                'flex-shrink-0 w-8 h-8 rounded-full',
+                'flex items-center justify-center',
+                'bg-primary-600 text-white',
+                'transition-all duration-200',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'active:scale-95',
+                !disabled && input.trim() && 'hover:bg-primary-700'
+              )}
+              aria-label="Send message"
             >
-              <Globe className="w-5 h-5" />
+              <ArrowUp className="w-4 h-4" />
             </button>
-          )}
+          </div>
         </div>
       </div>
     </div>

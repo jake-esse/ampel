@@ -1,4 +1,4 @@
-import { cn, formatMessageTime } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import type { Message as MessageType } from '@/types/chat'
 import { MarkdownMessage } from './MarkdownMessage'
 
@@ -34,8 +34,8 @@ export function Message({ message }: MessageProps) {
         className={cn(
           'px-4 py-3 rounded-2xl break-words',
           isUser
-            ? 'bg-primary-600 text-white rounded-tr-sm'
-            : 'bg-gray-100 text-gray-900 rounded-tl-sm'
+            ? 'bg-[#E8E6E1] text-gray-900'
+            : 'text-gray-900 rounded-tl-sm'
         )}
       >
         {/* User messages: plain text */}
@@ -47,7 +47,7 @@ export function Message({ message }: MessageProps) {
 
         {/* Assistant messages: markdown with syntax highlighting */}
         {isAssistant && (
-          <>
+          <div className="font-serif">
             {message.content ? (
               <MarkdownMessage content={message.content} />
             ) : message.isStreaming ? (
@@ -66,16 +66,9 @@ export function Message({ message }: MessageProps) {
             {message.isStreaming && message.content && (
               <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />
             )}
-          </>
+          </div>
         )}
       </div>
-
-      {/* Timestamp */}
-      {!message.isStreaming && (
-        <span className="text-xs text-gray-500 px-1">
-          {formatMessageTime(message.timestamp)}
-        </span>
-      )}
     </div>
   )
 }

@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { X, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { ConversationList } from '../conversations/ConversationList'
 import type { Conversation } from '@/types/database'
-import { cn, getUserInitials, getAvatarColor } from '@/lib/utils'
+import { cn, getUserInitials } from '@/lib/utils'
 
 interface DrawerProps {
   isOpen: boolean
@@ -66,7 +66,8 @@ export function Drawer({
       {/* Drawer */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 w-[85%] max-w-sm bg-gray-900 z-50',
+          'fixed inset-y-0 left-0 w-[75%] max-w-sm bg-[#F2F1ED] z-50',
+          'border-r-[0.5px] border-[#E5E3DD]',
           'transform transition-transform duration-300 ease-in-out',
           'flex flex-col',
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -74,20 +75,13 @@ export function Drawer({
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-6 py-4 border-b border-gray-800"
+          className="flex items-center px-6 py-3"
           style={{
             // iOS safe area support for top (notch/Dynamic Island)
-            paddingTop: 'max(1rem, env(safe-area-inset-top))',
+            paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
           }}
         >
-          <h2 className="text-xl font-bold text-white">Ampel</h2>
-          <button
-            onClick={onClose}
-            className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
-            aria-label="Close drawer"
-          >
-            <X className="w-6 h-6 text-gray-400" />
-          </button>
+          <h2 className="text-xl font-bold font-sans text-gray-900">Ampel</h2>
         </div>
 
         {/* Conversation list */}
@@ -107,33 +101,28 @@ export function Drawer({
         </div>
 
         {/* Profile section */}
-        <div className="border-t border-gray-800 px-6 py-4">
+        <div className="border-t-[0.5px] border-[#E5E3DD] px-6 py-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {/* Avatar with initials */}
-              <div
-                className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
-                  getAvatarColor(userEmail)
-                )}
-              >
-                <span className="text-sm font-semibold text-white">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-[#30302E]">
+                <span className="text-xs font-semibold text-white">
                   {getUserInitials(null, userEmail)}
                 </span>
               </div>
 
               {/* User info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-400 truncate">{userEmail}</p>
+                <p className="text-sm text-gray-600 truncate">{userEmail}</p>
               </div>
             </div>
 
             {/* Settings button */}
             <button
-              className="p-2.5 hover:bg-gray-800 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
+              className="p-2.5 hover:bg-gray-200 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
               aria-label="Settings"
             >
-              <Settings className="w-5 h-5 text-gray-400" />
+              <Settings className="w-5 h-5 text-gray-600" />
             </button>
           </div>
         </div>
@@ -143,7 +132,7 @@ export function Drawer({
           style={{
             height: 'env(safe-area-inset-bottom)',
           }}
-          className="bg-gray-900"
+          className="bg-[#F2F1ED]"
         />
       </div>
     </>
