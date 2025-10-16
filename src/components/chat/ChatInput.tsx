@@ -88,6 +88,7 @@ export function ChatInput({
             autoCapitalize="sentences"
             className={cn(
               'w-full bg-transparent text-gray-900 px-4 pt-4 pb-2',
+              'text-lg',
               'resize-none overflow-hidden',
               'placeholder:text-gray-400',
               'border-0 focus:outline-none focus:ring-0',

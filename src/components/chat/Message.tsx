@@ -23,7 +23,7 @@ export function Message({ message }: MessageProps) {
     <div
       className={cn(
         'flex flex-col gap-1 mb-4',
-        isUser ? 'ml-auto items-end max-w-[85%]' : 'mr-auto items-start max-w-[90%]',
+        isUser ? 'ml-auto items-end max-w-[85%]' : 'mr-auto items-start',
         // Fade-in animation for new messages
         isNew && isUser && 'animate-in fade-in slide-in-from-right-4 duration-200',
         isNew && isAssistant && 'animate-in fade-in slide-in-from-left-4 duration-200'
