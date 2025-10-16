@@ -210,17 +210,12 @@ export function ChatInterface({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Message list - adjusts bottom margin when keyboard appears */}
-      <div
-        style={{
-          flex: 1,
-          marginBottom: `${keyboardHeight}px`,
-          transition: 'margin-bottom 0.25s ease-out',
-          overflow: 'hidden',
-        }}
-      >
-        <MessageList messages={messages} keyboardVisible={keyboardVisible} />
-      </div>
+      {/* Message list */}
+      <MessageList
+        messages={messages}
+        keyboardVisible={keyboardVisible}
+        keyboardHeight={keyboardHeight}
+      />
 
       {/* Input area with integrated controls */}
       <ChatInput
