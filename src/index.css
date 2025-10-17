@@ -17,11 +17,11 @@
 
   /* Smooth transition when body height changes from Capacitor keyboard */
   body {
-    transition: height 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Apply smooth transitions to main layout containers */
   .flex-col.h-full {
-    transition: height 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
