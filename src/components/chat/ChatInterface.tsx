@@ -10,6 +10,7 @@ import {
 } from '@/lib/database/messages'
 import { streamConversationTitle } from '@/lib/ai/streaming-titles'
 import { useToast } from '@/hooks/useToast'
+import { useKeyboard } from '@/hooks/useKeyboard'
 import type { Message, StreamingStatus } from '@/types/chat'
 
 interface ChatInterfaceProps {
@@ -35,6 +36,9 @@ export function ChatInterface({
 
   // Toast notifications for errors
   const { showToast } = useToast()
+
+  // Get keyboard height for smooth animation
+  const { keyboardHeight } = useKeyboard()
 
   // Load messages when conversationId changes
   useEffect(() => {
@@ -205,7 +209,15 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div
+      className="flex flex-col h-full"
+      style={{
+        // Smooth transform to push content up when keyboard appears
+        transform: `translateY(-${keyboardHeight}px)`,
+        // iOS-native smooth animation timing
+        transition: 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      }}
+    >
       {/* Message list */}
       <MessageList messages={messages} />
 
