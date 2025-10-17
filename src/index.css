@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Keyboard animation handling */
+/* Base layout styles */
 @layer base {
   /* Ensure html and body take full height */
   html, body {
@@ -13,16 +13,5 @@
   /* Root app container */
   #root {
     height: 100%;
-  }
-
-  /* Note: Don't add transitions to body - Capacitor sets style directly
-     which bypasses CSS transitions. We handle animations in the wrapper instead */
-
-  /* Keyboard animation wrapper - transitions handled via inline styles
-     to match iOS native timing dynamically */
-  .keyboard-animation-wrapper {
-    height: 100%;
-    width: 100%;
-    position: relative;
   }
 }

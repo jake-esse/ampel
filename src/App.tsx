@@ -7,7 +7,6 @@ import { ToastProvider } from './contexts/ToastContext'
 import { ToastContainer } from './components/ui/ToastContainer'
 import { isNativePlatform, isAndroid } from './hooks/usePlatform'
 import { useNetworkStatus } from './hooks/useNetworkStatus'
-import { useKeyboardAnimation } from './hooks/useKeyboardAnimation'
 import Login from './pages/Login'
 import Chat from './pages/Chat'
 
@@ -18,9 +17,6 @@ import Chat from './pages/Chat'
 function AppContent() {
   // Initialize network status monitoring (shows toasts on connection changes)
   useNetworkStatus()
-
-  // Get keyboard animation wrapper style
-  const { wrapperStyle } = useKeyboardAnimation()
 
   // Initialize status bar on mount
   useEffect(() => {
@@ -48,32 +44,29 @@ function AppContent() {
 
   return (
     <ConversationProvider>
-      {/* Wrapper div for smooth keyboard animations */}
-      <div className="keyboard-animation-wrapper" style={wrapperStyle}>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chat/:conversationId"
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat/:conversationId"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
-        {/* Toast notifications */}
-        <ToastContainer />
-      </div>
+      {/* Toast notifications */}
+      <ToastContainer />
     </ConversationProvider>
   )
 }

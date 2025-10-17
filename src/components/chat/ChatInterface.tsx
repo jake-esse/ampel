@@ -212,10 +212,11 @@ export function ChatInterface({
     <div
       className="flex flex-col h-full"
       style={{
-        // Smooth transform to push content up when keyboard appears
-        transform: `translateY(-${keyboardHeight}px)`,
+        // Add padding at bottom to push input above keyboard
+        // This keeps messages in place while moving input up
+        paddingBottom: `${keyboardHeight}px`,
         // iOS-native smooth animation timing
-        transition: 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        transition: 'padding-bottom 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       }}
     >
       {/* Message list */}
