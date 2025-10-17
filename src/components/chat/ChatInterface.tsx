@@ -9,7 +9,6 @@ import {
   convertDbMessagesToFrontend,
 } from '@/lib/database/messages'
 import { streamConversationTitle } from '@/lib/ai/streaming-titles'
-import { useKeyboard } from '@/hooks/useKeyboard'
 import { useToast } from '@/hooks/useToast'
 import type { Message, StreamingStatus } from '@/types/chat'
 
@@ -33,9 +32,6 @@ export function ChatInterface({
   const [reasoning, setReasoning] = useState(false)
   const [webSearch, setWebSearch] = useState(false)
   const [streamingStatus, setStreamingStatus] = useState<StreamingStatus>('idle')
-
-  // Keyboard handling for smooth layout adjustment
-  const { isVisible: keyboardVisible, keyboardHeight } = useKeyboard()
 
   // Toast notifications for errors
   const { showToast } = useToast()
@@ -209,17 +205,9 @@ export function ChatInterface({
   }
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{
-        // Reduce available height when keyboard is open
-        paddingBottom: `${keyboardHeight}px`,
-        // Smooth transition matching iOS native keyboard timing
-        transition: 'padding-bottom 0.25s ease-out',
-      }}
-    >
+    <div className="flex flex-col h-full">
       {/* Message list */}
-      <MessageList messages={messages} keyboardVisible={keyboardVisible} />
+      <MessageList messages={messages} />
 
       {/* Input area with integrated controls */}
       <ChatInput

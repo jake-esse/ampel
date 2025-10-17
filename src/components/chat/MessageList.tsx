@@ -6,7 +6,6 @@ import type { Message as MessageType } from '@/types/chat'
 
 interface MessageListProps {
   messages: MessageType[]
-  keyboardVisible?: boolean
 }
 
 /**
@@ -17,14 +16,13 @@ interface MessageListProps {
  * - Does NOT scroll if user is reading older messages
  * Shows welcoming empty state when no messages
  */
-export function MessageList({ messages, keyboardVisible = false }: MessageListProps) {
+export function MessageList({ messages }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [wasAtBottom, setWasAtBottom] = useState(true)
-  const prevKeyboardVisible = useRef(keyboardVisible)
 
   // Get keyboard control utility
-  const { hideKeyboard } = useKeyboard()
+  const { hideKeyboard, isVisible: keyboardVisible } = useKeyboard()
 
   // Check if user is at bottom of message list
   const isAtBottom = (): boolean => {
@@ -59,17 +57,12 @@ export function MessageList({ messages, keyboardVisible = false }: MessageListPr
 
   // Auto-scroll when keyboard appears (if user was at bottom)
   useEffect(() => {
-    // Detect keyboard appearance (transition from hidden to visible)
-    const keyboardJustAppeared = !prevKeyboardVisible.current && keyboardVisible
-
-    if (keyboardJustAppeared && wasAtBottom && bottomRef.current) {
+    if (keyboardVisible && wasAtBottom && bottomRef.current) {
       // Small delay to let keyboard animation start, then scroll
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 50)
     }
-
-    prevKeyboardVisible.current = keyboardVisible
   }, [keyboardVisible, wasAtBottom])
 
   // Handle tap on message area to dismiss keyboard

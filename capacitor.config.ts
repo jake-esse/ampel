@@ -1,4 +1,5 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { KeyboardResize, KeyboardStyle } from '@capacitor/keyboard';
 
 const config: CapacitorConfig = {
   appId: 'com.ampel.app',
@@ -10,6 +11,11 @@ const config: CapacitorConfig = {
     androidScheme: 'https'
   },
   plugins: {
+    Keyboard: {
+      resize: KeyboardResize.Body,       // Only resize body element, not viewport
+      style: KeyboardStyle.Default,      // Use default keyboard style
+      resizeOnFullScreen: true          // Resize even in fullscreen mode (Android)
+    },
     SplashScreen: {
       launchShowDuration: 2000,
       backgroundColor: '#111827',
