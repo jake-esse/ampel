@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
   },
   plugins: {
     Keyboard: {
-      resize: KeyboardResize.None,       // Don't auto-resize - we handle it manually for smooth animation
+      resize: KeyboardResize.Body,       // Only resize body element, not viewport
       style: KeyboardStyle.Default,      // Use default keyboard style
       resizeOnFullScreen: true          // Resize even in fullscreen mode (Android)
     },
