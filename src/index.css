@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Smooth keyboard transitions */
+@layer base {
+  /* Ensure html and body take full height */
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Root app container */
+  #root {
+    height: 100%;
+  }
+
+  /* Smooth transition when body height changes from Capacitor keyboard */
+  body {
+    transition: height 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* Apply smooth transitions to main layout containers */
+  .flex-col.h-full {
+    transition: height 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+}
