@@ -199,7 +199,7 @@ export default function Chat() {
             paddingTop: 'max(1rem, env(safe-area-inset-top))',
           }}
         >
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <div className="relative flex items-center justify-between max-w-4xl mx-auto">
             {/* Left: Hamburger menu */}
             <button
               onClick={() => {
@@ -207,14 +207,14 @@ export default function Chat() {
                 impact('light')
                 setDrawerOpen(true)
               }}
-              className="p-2.5 hover:bg-gray-100 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2.5 hover:bg-gray-100 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center z-10"
               aria-label="Open menu"
             >
               <Menu className="w-5 h-5 text-gray-900" />
             </button>
 
-            {/* Center: Title with streaming animation */}
-            <h1 className="text-xl font-semibold font-serif text-gray-900 truncate mx-4 flex-1 text-center">
+            {/* Center: Title with streaming animation - absolutely positioned for true centering */}
+            <h1 className="absolute left-0 right-0 text-xl font-semibold font-serif text-gray-900 truncate px-16 text-center">
               <StreamingTitle
                 title={currentConversationTitle || 'Ampel Chat'}
                 isStreaming={isTitleStreaming}
@@ -224,7 +224,7 @@ export default function Chat() {
             {/* Right: New chat button */}
             <button
               onClick={handleCreateNewConversation}
-              className="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center transition-all duration-150 active:scale-95"
+              className="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center transition-all duration-150 active:scale-95 z-10"
               aria-label="New chat"
             >
               <Plus className="w-3.5 h-3.5 text-white" />
