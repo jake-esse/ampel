@@ -141,7 +141,7 @@ export function ChatInput({
                   }}
                   disabled={disabled}
                   className={cn(
-                    'w-8 h-8 rounded-full transition-all duration-150 active:scale-95 flex items-center justify-center',
+                    'w-9 h-9 rounded-full transition-all duration-150 active:scale-95 flex items-center justify-center',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                     reasoning
                       ? 'bg-primary-600 text-white'
@@ -150,7 +150,7 @@ export function ChatInput({
                   aria-label="Toggle reasoning mode"
                   title="Reasoning"
                 >
-                  <Brain className="w-4 h-4" />
+                  <Brain className="w-5 h-5" />
                 </button>
               )}
 
@@ -165,7 +165,7 @@ export function ChatInput({
                   }}
                   disabled={disabled}
                   className={cn(
-                    'w-8 h-8 rounded-full transition-all duration-150 active:scale-95 flex items-center justify-center',
+                    'w-9 h-9 rounded-full transition-all duration-150 active:scale-95 flex items-center justify-center',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                     webSearch
                       ? 'bg-primary-600 text-white'
@@ -174,7 +174,7 @@ export function ChatInput({
                   aria-label="Toggle web search"
                   title="Web Search"
                 >
-                  <Globe className="w-4 h-4" />
+                  <Globe className="w-5 h-5" />
                 </button>
               )}
             </div>
@@ -184,7 +184,7 @@ export function ChatInput({
               onClick={handleSend}
               disabled={disabled || !input.trim()}
               className={cn(
-                'flex-shrink-0 w-8 h-8 rounded-full',
+                'flex-shrink-0 w-9 h-9 rounded-full',
                 'flex items-center justify-center',
                 'bg-primary-600 text-white',
                 'transition-all duration-200',
@@ -194,7 +194,7 @@ export function ChatInput({
               )}
               aria-label="Send message"
             >
-              <ArrowUp className="w-4 h-4" />
+              <ArrowUp className="w-5 h-5" />
             </button>
           </div>
         </div>

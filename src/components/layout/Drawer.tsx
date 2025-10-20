@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Settings } from 'lucide-react'
+import { Settings, Plus } from 'lucide-react'
 import { ConversationList } from '../conversations/ConversationList'
 import type { Conversation } from '@/types/database'
 import { cn, getUserInitials } from '@/lib/utils'
@@ -75,23 +75,31 @@ export function Drawer({
       >
         {/* Header */}
         <div
-          className="flex items-center px-6 py-3"
+          className="flex items-center justify-between px-6 py-4"
           style={{
             // iOS safe area support for top (notch/Dynamic Island)
-            paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
+            paddingTop: 'max(1rem, env(safe-area-inset-top))',
           }}
         >
-          <h2 className="text-xl font-bold font-sans text-gray-900">Ampel</h2>
+          <h2 className="text-2xl font-bold font-sans text-gray-900">Ampel</h2>
+
+          {/* New chat button */}
+          <button
+            onClick={() => {
+              onCreateNew()
+              onClose()
+            }}
+            className="w-7 h-7 rounded-full bg-[#30302E] flex items-center justify-center transition-all duration-150 active:scale-95"
+            aria-label="New chat"
+          >
+            <Plus className="w-3.5 h-3.5 text-white" />
+          </button>
         </div>
 
         {/* Conversation list */}
         <div className="flex-1 overflow-hidden">
           <ConversationList
             currentConversationId={currentConversationId}
-            onCreateNew={() => {
-              onCreateNew()
-              onClose()
-            }}
             onSelectConversation={(id) => {
               onSelectConversation(id)
               onClose()

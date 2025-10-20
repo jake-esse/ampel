@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Plus, RefreshCw, MessageSquare } from 'lucide-react'
+import { RefreshCw, MessageSquare } from 'lucide-react'
 import { ConversationItem } from './ConversationItem'
 import { ConversationSkeleton } from './ConversationSkeleton'
 import { useConversations } from '@/hooks/useConversations'
@@ -8,18 +8,16 @@ import type { Conversation } from '@/types/database'
 
 interface ConversationListProps {
   currentConversationId: string | null
-  onCreateNew: () => void
   onSelectConversation: (id: string) => void
   onLongPressConversation: (conversation: Conversation) => void
 }
 
 /**
- * List of user's conversations with create new button
+ * List of user's conversations
  * Uses shared conversation context for real-time updates
  */
 export function ConversationList({
   currentConversationId,
-  onCreateNew,
   onSelectConversation,
   onLongPressConversation,
 }: ConversationListProps) {
@@ -78,20 +76,6 @@ export function ConversationList({
 
   return (
     <div className="flex flex-col h-full">
-      {/* New chat button */}
-      <div className="px-6 py-3">
-        <button
-          onClick={onCreateNew}
-          className="flex items-center gap-3 hover:bg-gray-200/50 rounded-lg px-0 py-2 transition-all duration-150 active:scale-95"
-          aria-label="New chat"
-        >
-          <div className="w-7 h-7 rounded-full bg-[#30302E] flex items-center justify-center flex-shrink-0">
-            <Plus className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="font-serif text-xl text-gray-900">New chat</span>
-        </button>
-      </div>
-
       {/* Conversations list */}
       <div
         ref={scrollContainerRef}
@@ -156,7 +140,7 @@ export function ConversationList({
               No conversations yet
             </p>
             <p className="text-sm text-gray-500 text-center">
-              Tap the + button above to start your first chat
+              Tap the + button at the top to start your first chat
             </p>
           </div>
         ) : (
