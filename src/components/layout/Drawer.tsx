@@ -78,13 +78,14 @@ export function Drawer({
           className="flex items-center justify-between px-6 py-5"
           style={{
             // iOS safe area support for top (notch/Dynamic Island)
-            paddingTop: 'max(1.5rem, env(safe-area-inset-top))',
+            // ADD padding on top of safe area (not max) so it actually moves down
+            paddingTop: 'calc(env(safe-area-inset-top) + 2rem)',
           }}
         >
           {/* Logo and title */}
-          <div className="flex items-center gap-2">
-            <Sprout className="w-6 h-6 text-gray-900" />
-            <h2 className="text-2xl font-normal font-sans text-gray-900">Ampel</h2>
+          <div className="flex items-end gap-1.5">
+            <Sprout className="w-7 h-7 text-gray-900" />
+            <h2 className="text-3xl font-medium font-sans text-gray-900">Ampel</h2>
           </div>
 
           {/* New chat button */}
