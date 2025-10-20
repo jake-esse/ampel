@@ -21,8 +21,8 @@ export function MessageList({ messages }: MessageListProps) {
   const lastUserMessageRef = useRef<HTMLDivElement>(null)
   const previousMessagesLengthRef = useRef(0)
 
-  // Get keyboard control utility
-  const { hideKeyboard, isVisible: keyboardVisible } = useKeyboard()
+  // Get keyboard control utility (with height for dynamic padding)
+  const { hideKeyboard, isVisible: keyboardVisible, keyboardHeight } = useKeyboard()
 
   // Find the index of the last user message
   // This is memoized to avoid recalculating on every render
@@ -122,9 +122,10 @@ export function MessageList({ messages }: MessageListProps) {
       style={{
         // iOS safe area support for top (notch/dynamic island)
         paddingTop: 'max(1rem, env(safe-area-inset-top))',
-        // Extra bottom padding to prevent messages from hiding behind fixed input
-        // Input is ~100px tall, add extra space for comfortable reading
-        paddingBottom: '140px',
+        // Dynamic bottom padding to compensate for keyboard and fixed input
+        // When keyboard closed: 140px for fixed input
+        // When keyboard open: 140px + keyboardHeight to compensate for viewport shrink
+        paddingBottom: keyboardVisible ? `${140 + keyboardHeight}px` : '140px',
       }}
     >
       {/* Messages or empty state */}
