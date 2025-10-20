@@ -83,9 +83,9 @@ export function Drawer({
           }}
         >
           {/* Logo and title */}
-          <div className="flex items-end gap-0.5">
+          <div className="flex items-start gap-0.5">
             <Sprout className="w-8 h-8 text-gray-900" />
-            <h2 className="text-3xl font-medium font-sans text-gray-900 tracking-tight">Ampel</h2>
+            <h2 className="text-3xl font-medium font-sans text-gray-900 tracking-tight mt-1.5">Ampel</h2>
           </div>
 
           {/* New chat button */}
@@ -94,7 +94,7 @@ export function Drawer({
               onCreateNew()
               onClose()
             }}
-            className="w-7 h-7 rounded-full bg-[#30302E] flex items-center justify-center transition-all duration-150 active:scale-95"
+            className="w-7 h-7 rounded-full bg-[#30302E] flex items-center justify-center transition-all duration-150 active:scale-95 mt-1.5"
             aria-label="New chat"
           >
             <Plus className="w-3.5 h-3.5 text-white" />
