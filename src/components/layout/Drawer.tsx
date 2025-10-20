@@ -75,7 +75,7 @@ export function Drawer({
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-6 pt-4 pb-5"
+          className="flex items-center justify-between px-6 pt-5 pb-5"
           style={{
             // iOS safe area support for top (notch/Dynamic Island)
             // Match chat header positioning for horizontal alignment
@@ -83,9 +83,9 @@ export function Drawer({
           }}
         >
           {/* Logo and title */}
-          <div className="flex items-end gap-1">
+          <div className="flex items-end gap-0.5">
             <Sprout className="w-8 h-8 text-gray-900" />
-            <h2 className="text-3xl font-medium font-sans text-gray-900">Ampel</h2>
+            <h2 className="text-3xl font-medium font-sans text-gray-900 tracking-tight">Ampel</h2>
           </div>
 
           {/* New chat button */}
