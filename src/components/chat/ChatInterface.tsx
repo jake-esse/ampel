@@ -10,7 +10,6 @@ import {
 } from '@/lib/database/messages'
 import { streamConversationTitle } from '@/lib/ai/streaming-titles'
 import { useToast } from '@/hooks/useToast'
-import { useKeyboardSmooth } from '@/hooks/useKeyboardSmooth'
 import type { Message, StreamingStatus } from '@/types/chat'
 
 interface ChatInterfaceProps {
@@ -36,9 +35,6 @@ export function ChatInterface({
 
   // Toast notifications for errors
   const { showToast } = useToast()
-
-  // Get smooth keyboard animation wrapper style
-  const { wrapperStyle } = useKeyboardSmooth()
 
   // Load messages when conversationId changes
   useEffect(() => {
@@ -210,23 +206,20 @@ export function ChatInterface({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Smooth animation wrapper */}
-      <div className="flex flex-col h-full" style={wrapperStyle}>
-        {/* Message list */}
-        <MessageList messages={messages} />
+      {/* Message list - takes up available space */}
+      <MessageList messages={messages} />
 
-        {/* Input area with integrated controls */}
-        <ChatInput
-          onSend={handleSendMessage}
-          disabled={streamingStatus !== 'idle' || isLoadingHistory}
-          reasoning={reasoning}
-          webSearch={webSearch}
-          onReasoningToggle={() => setReasoning(!reasoning)}
-          onWebSearchToggle={() => setWebSearch(!webSearch)}
-          autoFocus={messages.length === 0}
-          placeholder={messages.length === 0 ? 'How can I help?' : 'Type a message...'}
-        />
-      </div>
+      {/* Input area - now position: fixed, floats above content */}
+      <ChatInput
+        onSend={handleSendMessage}
+        disabled={streamingStatus !== 'idle' || isLoadingHistory}
+        reasoning={reasoning}
+        webSearch={webSearch}
+        onReasoningToggle={() => setReasoning(!reasoning)}
+        onWebSearchToggle={() => setWebSearch(!webSearch)}
+        autoFocus={messages.length === 0}
+        placeholder={messages.length === 0 ? 'How can I help?' : 'Type a message...'}
+      />
     </div>
   )
 }

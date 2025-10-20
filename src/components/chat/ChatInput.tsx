@@ -2,6 +2,7 @@ import { useState, KeyboardEvent, useRef, useEffect } from 'react'
 import { ArrowUp, Brain, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { impact } from '@/hooks/useHaptics'
+import { useKeyboardAnimation } from '@/hooks/useKeyboardAnimation'
 
 interface ChatInputProps {
   onSend: (content: string) => void
@@ -30,6 +31,9 @@ export function ChatInput({
 }: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Use keyboard animation hook - returns ref callback for direct DOM manipulation
+  const containerRef = useKeyboardAnimation()
 
   // Auto-focus if requested
   useEffect(() => {
@@ -63,10 +67,27 @@ export function ChatInput({
 
   return (
     <div
+      ref={containerRef}
       className="px-3 pb-2 pt-2"
       style={{
+        // CRITICAL: position fixed with top positioning
+        // The hook directly updates style.top based on visualViewport.height
+        position: 'fixed',
+        left: 0,
+        width: '100%',
+        // Transform shifts element up by its own height (keeps it at bottom edge)
+        // Combined with top: ${vv.height}px, this creates bottom-aligned fixed positioning
+        transform: 'translateY(-100%)',
         // iOS safe area support for bottom (home indicator)
         paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+        // Smooth CSS transition on 'top' property (NOT transform)
+        // Slightly longer duration (0.3s) for smoother feel
+        // cubic-bezier(0.25, 0.1, 0.25, 1) is iOS ease-in-out curve
+        transition: 'top 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        // GPU acceleration for smoother animation
+        willChange: 'top',
+        // Ensure input appears above other content
+        zIndex: 1000,
       }}
     >
       <div className="max-w-4xl mx-auto">
@@ -115,6 +136,8 @@ export function ChatInput({
                   onClick={() => {
                     impact('light')
                     onReasoningToggle()
+                    // Refocus textarea to prevent keyboard from closing
+                    textareaRef.current?.focus()
                   }}
                   disabled={disabled}
                   className={cn(
@@ -137,6 +160,8 @@ export function ChatInput({
                   onClick={() => {
                     impact('light')
                     onWebSearchToggle()
+                    // Refocus textarea to prevent keyboard from closing
+                    textareaRef.current?.focus()
                   }}
                   disabled={disabled}
                   className={cn(
