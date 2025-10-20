@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Settings, Plus } from 'lucide-react'
+import { Settings, Plus, Sprout } from 'lucide-react'
 import { ConversationList } from '../conversations/ConversationList'
 import type { Conversation } from '@/types/database'
 import { cn, getUserInitials } from '@/lib/utils'
@@ -75,13 +75,17 @@ export function Drawer({
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-6 py-4"
+          className="flex items-center justify-between px-6 py-5"
           style={{
             // iOS safe area support for top (notch/Dynamic Island)
-            paddingTop: 'max(1rem, env(safe-area-inset-top))',
+            paddingTop: 'max(1.5rem, env(safe-area-inset-top))',
           }}
         >
-          <h2 className="text-2xl font-bold font-sans text-gray-900">Ampel</h2>
+          {/* Logo and title */}
+          <div className="flex items-center gap-2">
+            <Sprout className="w-6 h-6 text-gray-900" />
+            <h2 className="text-2xl font-normal font-sans text-gray-900">Ampel</h2>
+          </div>
 
           {/* New chat button */}
           <button
