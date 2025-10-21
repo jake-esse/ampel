@@ -15,7 +15,7 @@ export function StreamingTitle({
 }: StreamingTitleProps) {
   return (
     <span className={className}>
-      {title || 'New Chat'}
+      {title}
       {isStreaming && title && (
         <span className="inline-block w-0.5 h-4 ml-1 bg-current animate-pulse" />
       )}

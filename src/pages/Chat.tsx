@@ -182,7 +182,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#F7F6F3] overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#FDFCFA] overflow-hidden">
       {/* Sliding content wrapper - pushes right when drawer opens */}
       <div
         className={cn(
@@ -193,7 +193,7 @@ export default function Chat() {
         {/* Header */}
         <header
           onClick={hideKeyboard}
-          className="bg-[#F7F6F3] rounded-b-3xl px-4 pt-4 pb-1 flex-shrink-0 border-b-[0.5px] border-[#E5E3DD]"
+          className="bg-[#FDFCFA] rounded-b-3xl px-4 pt-4 pb-1 flex-shrink-0 border-b-[0.5px] border-[#E5E3DD]"
           style={{
             // iOS safe area support for top (notch/Dynamic Island)
             paddingTop: 'max(1rem, env(safe-area-inset-top))',
@@ -216,7 +216,7 @@ export default function Chat() {
             {/* Center: Title with streaming animation - absolutely positioned for true centering */}
             <h1 className="absolute left-0 right-0 text-xl font-semibold font-serif text-gray-900 truncate px-16 text-center">
               <StreamingTitle
-                title={currentConversationTitle || 'Ampel Chat'}
+                title={currentConversationTitle || ''}
                 isStreaming={isTitleStreaming}
               />
             </h1>

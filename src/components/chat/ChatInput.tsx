@@ -35,10 +35,15 @@ export function ChatInput({
   // Use keyboard animation hook - returns ref callback for direct DOM manipulation
   const containerRef = useKeyboardAnimation()
 
-  // Auto-focus if requested
+  // Auto-focus if requested - with delay for mobile keyboard
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
-      textareaRef.current.focus()
+      // Small delay ensures mobile keyboard opens properly
+      const timer = setTimeout(() => {
+        textareaRef.current?.focus()
+      }, 100)
+
+      return () => clearTimeout(timer)
     }
   }, [autoFocus])
 
@@ -92,7 +97,7 @@ export function ChatInput({
     >
       <div className="max-w-4xl mx-auto">
         {/* Input container with solid background */}
-        <div className="bg-[#FDFCFA] rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
           {/* Textarea */}
           <textarea
             ref={textareaRef}

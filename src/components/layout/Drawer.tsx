@@ -83,9 +83,12 @@ export function Drawer({
           }}
         >
           {/* Logo and title */}
-          <div className="flex items-end gap-0.5">
-            <Sprout className="w-8 h-8 text-gray-900 -mt-2.5" />
-            <h2 className="text-3xl font-medium font-sans text-gray-900 tracking-tight mt-1.5">Ampel</h2>
+          <div className="flex items-end">
+            <Sprout
+              className="w-8 h-8 text-gray-900"
+              style={{ transform: 'translateY(-4px)' }}
+            />
+            <h2 className="text-3xl font-medium font-sans text-gray-900 tracking-tight mt-1.5 -ml-1">Ampel</h2>
           </div>
 
           {/* New chat button */}
