@@ -40,22 +40,41 @@ export function useKeyboard(): KeyboardState {
 
     let showListener: any = null
     let hideListener: any = null
+    let lastHeight = 0
+    let debounceTimer: NodeJS.Timeout | null = null
 
     // Set up keyboard event listeners
     const setupListeners = async () => {
       // Listen for keyboard appearance
-      // Using keyboardWillShow to trigger layout changes before animation starts
-      // This allows our transitions to sync with native keyboard animation
+      // With debouncing to prevent double-firing issues
       showListener = await Keyboard.addListener('keyboardWillShow', (info) => {
-        setIsVisible(true)
-        // info.keyboardHeight is in pixels, includes toolbar on iOS
-        setKeyboardHeight(info.keyboardHeight)
+        // Clear any pending debounce timer
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+        }
+
+        // Only update if height actually changed (prevents double events)
+        if (info.keyboardHeight !== lastHeight) {
+          debounceTimer = setTimeout(() => {
+            setIsVisible(true)
+            setKeyboardHeight(info.keyboardHeight)
+            lastHeight = info.keyboardHeight
+          }, 10) // Small debounce to prevent double triggers
+        }
       })
 
       // Listen for keyboard dismissal
       hideListener = await Keyboard.addListener('keyboardWillHide', () => {
-        setIsVisible(false)
-        setKeyboardHeight(0)
+        // Clear any pending debounce timer
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+        }
+
+        debounceTimer = setTimeout(() => {
+          setIsVisible(false)
+          setKeyboardHeight(0)
+          lastHeight = 0
+        }, 10)
       })
     }
 
@@ -68,6 +87,9 @@ export function useKeyboard(): KeyboardState {
       }
       if (hideListener) {
         hideListener.remove()
+      }
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
       }
     }
   }, [])

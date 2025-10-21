@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base layout styles */
+@layer base {
+  /* Ensure html and body take full height */
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Root app container */
+  #root {
+    height: 100%;
+  }
+}

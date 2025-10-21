@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Sprout } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 
@@ -15,6 +16,8 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingType, setLoadingType] = useState<'email' | 'apple' | 'google' | null>(null)
+  const [emailFocused, setEmailFocused] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   // Redirect to chat if already authenticated
   useEffect(() => {
@@ -22,6 +25,22 @@ export default function Login() {
       navigate('/chat', { replace: true })
     }
   }, [user, navigate])
+
+  // Handle email focus - scroll form into view and expand
+  const handleEmailFocus = () => {
+    setEmailFocused(true)
+
+    // Scroll the form into view after a short delay to ensure smooth expansion
+    // Use 'start' to position form at top of viewport, ensuring it's visible above keyboard
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }
+    }, 150)
+  }
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -143,20 +162,39 @@ export default function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900 px-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Branding */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-2">Ampel</h1>
-          <p className="text-gray-400">Your AI Assistant</p>
+    <div className="min-h-screen bg-[#FDFCFA] px-4 overflow-y-auto flex items-center justify-center">
+      <div
+        className="w-full max-w-md transition-all duration-300"
+        style={{
+          paddingBottom: emailFocused ? '400px' : '0',
+          marginTop: emailFocused ? '100px' : '0',
+        }}
+      >
+        {/* Logo/Branding - Collapses when email is focused */}
+        <div
+          className="flex flex-col items-center mt-8 overflow-hidden transition-all duration-300"
+          style={{
+            maxHeight: emailFocused ? '0' : '200px',
+            marginBottom: emailFocused ? '0' : '1.5rem',
+            opacity: emailFocused ? 0 : 1,
+          }}
+        >
+          <div className="flex items-end gap-1 mb-3">
+            <Sprout
+              className="w-12 h-12 text-gray-900"
+              style={{ transform: 'translateY(-6px)' }}
+            />
+            <h1 className="text-5xl font-medium font-sans text-gray-900 tracking-tight -ml-1">Ampel</h1>
+          </div>
+          <p className="text-gray-600 text-lg">Your AI Company</p>
         </div>
 
         {/* Social Auth Buttons */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3 mb-4">
           <button
             onClick={() => handleOAuthSignIn('apple')}
             disabled={loading}
-            className="w-full min-h-[48px] px-4 py-3 bg-white text-black rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full min-h-[56px] px-6 py-4 bg-[#30302E] text-white rounded-2xl font-medium flex items-center justify-center gap-3 hover:bg-[#404040] transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {loading && loadingType === 'apple' ? (
               <>
@@ -164,14 +202,14 @@ export default function Login() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>Signing in with Apple...</span>
+                <span>Signing in...</span>
               </>
             ) : (
               <>
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
                 </svg>
-                <span>Sign in with Apple</span>
+                <span>Continue with Apple</span>
               </>
             )}
           </button>
@@ -179,7 +217,7 @@ export default function Login() {
           <button
             onClick={() => handleOAuthSignIn('google')}
             disabled={loading}
-            className="w-full min-h-[48px] px-4 py-3 bg-white text-gray-700 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full min-h-[56px] px-6 py-4 bg-white text-gray-900 rounded-2xl font-medium flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-[#E5E3DD]"
           >
             {loading && loadingType === 'google' ? (
               <>
@@ -187,7 +225,7 @@ export default function Login() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>Signing in with Google...</span>
+                <span>Signing in...</span>
               </>
             ) : (
               <>
@@ -197,89 +235,94 @@ export default function Login() {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                <span>Sign in with Google</span>
+                <span>Continue with Google</span>
               </>
             )}
           </button>
         </div>
 
         {/* Divider */}
-        <div className="relative mb-6">
+        <div className="relative mb-4">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-700"></div>
+            <div className="w-full border-t border-[#E5E3DD]"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-gray-900 text-gray-400">or</span>
+            <span className="px-3 bg-[#FDFCFA] text-gray-600">or</span>
           </div>
         </div>
 
         {/* Email/Password Form */}
-        <form onSubmit={handleEmailAuth} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-              Email
-            </label>
+        <form ref={formRef} onSubmit={handleEmailAuth} className="bg-white rounded-2xl shadow-sm border border-[#E5E3DD] overflow-hidden">
+          {/* Email Input - Always visible */}
+          <div className="p-4">
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onFocus={handleEmailFocus}
               disabled={loading}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
-              placeholder="you@example.com"
+              className="w-full px-4 py-3 bg-[#F2F1ED] border-0 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 text-base"
+              placeholder="Email"
               required
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full min-h-[48px] px-4 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          {/* Password and Submit - Expands when email is focused */}
+          <div
+            className="transition-all duration-300 ease-in-out overflow-hidden"
+            style={{
+              maxHeight: emailFocused ? '300px' : '0',
+              opacity: emailFocused ? 1 : 0,
+            }}
           >
-            {loading && loadingType === 'email' ? (
-              <>
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Signing in...</span>
-              </>
-            ) : (
-              mode === 'signin' ? 'Sign In' : 'Sign Up'
-            )}
-          </button>
+            <div className="px-4 pb-4 space-y-3">
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                className="w-full px-4 py-3 bg-[#F2F1ED] border-0 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 text-base"
+                placeholder="Password"
+                required
+              />
 
-          {/* Mode Toggle */}
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === 'signin' ? 'signup' : 'signin')
-              }}
-              disabled={loading}
-              className="text-sm text-gray-400 hover:text-white transition-all duration-150 active:opacity-70 disabled:opacity-50"
-            >
-              {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-            </button>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full min-h-[48px] px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading && loadingType === 'email' ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  mode === 'signin' ? 'Sign In' : 'Sign Up'
+                )}
+              </button>
+            </div>
           </div>
         </form>
+
+        {/* Mode Toggle */}
+        <div className="text-center mt-6">
+          <button
+            type="button"
+            onClick={() => {
+              setMode(mode === 'signin' ? 'signup' : 'signin')
+            }}
+            disabled={loading}
+            className="text-sm text-gray-600 hover:text-gray-900 transition-all duration-150 active:opacity-70 disabled:opacity-50"
+          >
+            {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+          </button>
+        </div>
       </div>
     </div>
   )

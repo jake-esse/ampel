@@ -1,24 +1,23 @@
-import { Sparkles } from 'lucide-react'
+import { Leaf } from 'lucide-react'
 
 /**
  * Empty state component shown when no messages in conversation
- * Displays a welcoming message to encourage first interaction
+ * Displays a large leaf icon to indicate a fresh start
+ * Fixed position prevents movement when keyboard opens
  */
 export function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-      {/* Icon */}
-      <div className="mb-6">
-        <Sparkles className="w-16 h-16 text-primary-500" strokeWidth={1.5} />
+    <div className="relative h-full px-6">
+      {/* Icon - fixed position to prevent keyboard from moving it */}
+      <div
+        className="absolute left-1/2"
+        style={{
+          top: 'calc(50% - 60px)',
+          transform: 'translateX(-50%)',
+        }}
+      >
+        <Leaf className="w-32 h-32 text-primary-500" strokeWidth={1.5} />
       </div>
-
-      {/* Greeting */}
-      <h2 className="text-2xl font-semibold text-white mb-2">Hi there!</h2>
-
-      {/* Subtitle */}
-      <p className="text-gray-400 text-base max-w-sm">
-        Start a conversation by typing a message below. I'm here to help with anything you need.
-      </p>
     </div>
   )
 }

@@ -104,14 +104,17 @@ export function ConversationItem({
       onTouchCancel={handleTouchCancel}
       onClick={handleClick}
       className={cn(
-        'w-full px-4 py-3.5 text-left transition-colors min-h-[48px]',
-        'flex items-center',
-        'hover:bg-gray-700/50 active:bg-gray-700',
-        isActive && 'bg-gray-700/70',
-        isPressed && 'bg-gray-700'
+        'w-full px-4 py-1.5 text-left transition-colors min-h-[48px]',
+        'flex items-center rounded-2xl',
+        'hover:bg-gray-200/50 active:bg-gray-200',
+        isActive && 'bg-[#30302E] text-white',
+        isPressed && 'bg-gray-200'
       )}
     >
-      <span className="text-white text-base font-medium line-clamp-1">
+      <span className={cn(
+        'text-base font-medium line-clamp-1',
+        isActive ? 'text-white' : 'text-gray-900'
+      )}>
         {truncatedTitle}
       </span>
     </button>

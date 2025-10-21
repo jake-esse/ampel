@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Plus, RefreshCw, MessageSquare } from 'lucide-react'
+import { RefreshCw, MessageSquare } from 'lucide-react'
 import { ConversationItem } from './ConversationItem'
 import { ConversationSkeleton } from './ConversationSkeleton'
 import { useConversations } from '@/hooks/useConversations'
@@ -8,18 +8,16 @@ import type { Conversation } from '@/types/database'
 
 interface ConversationListProps {
   currentConversationId: string | null
-  onCreateNew: () => void
   onSelectConversation: (id: string) => void
   onLongPressConversation: (conversation: Conversation) => void
 }
 
 /**
- * List of user's conversations with create new button
+ * List of user's conversations
  * Uses shared conversation context for real-time updates
  */
 export function ConversationList({
   currentConversationId,
-  onCreateNew,
   onSelectConversation,
   onLongPressConversation,
 }: ConversationListProps) {
@@ -78,17 +76,6 @@ export function ConversationList({
 
   return (
     <div className="flex flex-col h-full">
-      {/* New chat button */}
-      <div className="px-4 py-4 border-b border-gray-700">
-        <button
-          onClick={onCreateNew}
-          className="w-full flex items-center gap-3 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-all duration-150 active:scale-95"
-        >
-          <Plus className="w-5 h-5" />
-          <span>New chat</span>
-        </button>
-      </div>
-
       {/* Conversations list */}
       <div
         ref={scrollContainerRef}
@@ -153,20 +140,20 @@ export function ConversationList({
               No conversations yet
             </p>
             <p className="text-sm text-gray-500 text-center">
-              Tap the + button above to start your first chat
+              Tap the + button at the top to start your first chat
             </p>
           </div>
         ) : (
           <>
             {/* Section label */}
-            <div className="px-4 pt-4 pb-2">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Recent
+            <div className="px-6 pt-4 pb-2">
+              <h3 className="text-sm font-semibold text-gray-600">
+                Recents
               </h3>
             </div>
 
             {/* List */}
-            <div className="pb-4">
+            <div className="pb-4 px-6">
               {conversations.map((conversation) => (
                 <ConversationItem
                   key={conversation.id}

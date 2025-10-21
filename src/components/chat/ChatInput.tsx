@@ -1,7 +1,8 @@
 import { useState, KeyboardEvent, useRef, useEffect } from 'react'
-import { SendHorizontal, Brain, Globe } from 'lucide-react'
+import { ArrowUp, Brain, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { impact } from '@/hooks/useHaptics'
+import { useKeyboardAnimation } from '@/hooks/useKeyboardAnimation'
 
 interface ChatInputProps {
   onSend: (content: string) => void
@@ -31,10 +32,18 @@ export function ChatInput({
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Auto-focus if requested
+  // Use keyboard animation hook - returns ref callback for direct DOM manipulation
+  const containerRef = useKeyboardAnimation()
+
+  // Auto-focus if requested - with delay for mobile keyboard
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
-      textareaRef.current.focus()
+      // Small delay ensures mobile keyboard opens properly
+      const timer = setTimeout(() => {
+        textareaRef.current?.focus()
+      }, 100)
+
+      return () => clearTimeout(timer)
     }
   }, [autoFocus])
 
@@ -63,15 +72,32 @@ export function ChatInput({
 
   return (
     <div
-      className="border-t border-gray-800 bg-gray-900 px-4 py-3"
+      ref={containerRef}
+      className="px-3 pb-2 pt-2"
       style={{
+        // CRITICAL: position fixed with top positioning
+        // The hook directly updates style.top based on visualViewport.height
+        position: 'fixed',
+        left: 0,
+        width: '100%',
+        // Transform shifts element up by its own height (keeps it at bottom edge)
+        // Combined with top: ${vv.height}px, this creates bottom-aligned fixed positioning
+        transform: 'translateY(-100%)',
         // iOS safe area support for bottom (home indicator)
-        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+        paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+        // Smooth CSS transition on 'top' property (NOT transform)
+        // Slightly longer duration (0.3s) for smoother feel
+        // cubic-bezier(0.25, 0.1, 0.25, 1) is iOS ease-in-out curve
+        transition: 'top 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        // GPU acceleration for smoother animation
+        willChange: 'top',
+        // Ensure input appears above other content
+        zIndex: 1000,
       }}
     >
       <div className="max-w-4xl mx-auto">
-        {/* Input row */}
-        <div className="flex items-end gap-2 mb-2">
+        {/* Input container with solid background */}
+        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
           {/* Textarea */}
           <textarea
             ref={textareaRef}
@@ -87,12 +113,13 @@ export function ChatInput({
             spellCheck={true}
             autoCapitalize="sentences"
             className={cn(
-              'flex-1 bg-gray-800 text-white rounded-2xl px-4 py-3',
+              'w-full bg-transparent text-gray-900 px-4 pt-4 pb-2',
+              'text-lg',
               'resize-none overflow-hidden',
-              'placeholder:text-gray-500',
-              'focus:outline-none focus:ring-2 focus:ring-primary-500',
+              'placeholder:text-gray-400',
+              'border-0 focus:outline-none focus:ring-0',
               'disabled:opacity-50 disabled:cursor-not-allowed',
-              'min-h-[48px] max-h-[120px]'
+              'min-h-[56px] max-h-[160px]'
             )}
             style={{
               // Auto-expand based on content
@@ -101,74 +128,80 @@ export function ChatInput({
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement
               target.style.height = 'auto'
-              target.style.height = `${Math.min(target.scrollHeight, 120)}px`
+              target.style.height = `${Math.min(target.scrollHeight, 160)}px`
             }}
           />
 
-          {/* Send button */}
-          <button
-            onClick={handleSend}
-            disabled={disabled || !input.trim()}
-            className={cn(
-              'flex-shrink-0 w-12 h-12 rounded-full',
-              'flex items-center justify-center',
-              'bg-primary-600 text-white',
-              'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'active:scale-95',
-              !disabled && input.trim() && 'hover:bg-primary-700'
-            )}
-            aria-label="Send message"
-          >
-            <SendHorizontal className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Controls row */}
-        <div className="flex items-center gap-2 px-2">
-          {/* Reasoning toggle */}
-          {onReasoningToggle && (
-            <button
-              onClick={() => {
-                impact('light')
-                onReasoningToggle()
-              }}
-              disabled={disabled}
-              className={cn(
-                'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                reasoning
-                  ? 'bg-primary-600/20 text-primary-400'
-                  : 'text-gray-500 hover:bg-gray-800'
+          {/* Controls row - buttons at bottom */}
+          <div className="flex items-center justify-between px-3 pb-3 pt-1">
+            <div className="flex items-center gap-2">
+              {/* Reasoning toggle */}
+              {onReasoningToggle && (
+                <button
+                  onClick={() => {
+                    impact('light')
+                    onReasoningToggle()
+                    // Refocus textarea to prevent keyboard from closing
+                    textareaRef.current?.focus()
+                  }}
+                  disabled={disabled}
+                  className={cn(
+                    'w-9 h-9 rounded-full transition-all duration-150 active:scale-95 flex items-center justify-center',
+                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    reasoning
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  )}
+                  aria-label="Toggle reasoning mode"
+                  title="Reasoning"
+                >
+                  <Brain className="w-5 h-5" />
+                </button>
               )}
-              aria-label="Toggle reasoning mode"
-              title="Reasoning"
-            >
-              <Brain className="w-5 h-5" />
-            </button>
-          )}
 
-          {/* Web search toggle */}
-          {onWebSearchToggle && (
-            <button
-              onClick={() => {
-                impact('light')
-                onWebSearchToggle()
-              }}
-              disabled={disabled}
-              className={cn(
-                'p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                webSearch
-                  ? 'bg-primary-600/20 text-primary-400'
-                  : 'text-gray-500 hover:bg-gray-800'
+              {/* Web search toggle */}
+              {onWebSearchToggle && (
+                <button
+                  onClick={() => {
+                    impact('light')
+                    onWebSearchToggle()
+                    // Refocus textarea to prevent keyboard from closing
+                    textareaRef.current?.focus()
+                  }}
+                  disabled={disabled}
+                  className={cn(
+                    'w-9 h-9 rounded-full transition-all duration-150 active:scale-95 flex items-center justify-center',
+                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    webSearch
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  )}
+                  aria-label="Toggle web search"
+                  title="Web Search"
+                >
+                  <Globe className="w-5 h-5" />
+                </button>
               )}
-              aria-label="Toggle web search"
-              title="Web Search"
+            </div>
+
+            {/* Send button */}
+            <button
+              onClick={handleSend}
+              disabled={disabled || !input.trim()}
+              className={cn(
+                'flex-shrink-0 w-9 h-9 rounded-full',
+                'flex items-center justify-center',
+                'bg-primary-600 text-white',
+                'transition-all duration-200',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'active:scale-95',
+                !disabled && input.trim() && 'hover:bg-primary-700'
+              )}
+              aria-label="Send message"
             >
-              <Globe className="w-5 h-5" />
+              <ArrowUp className="w-5 h-5" />
             </button>
-          )}
+          </div>
         </div>
       </div>
     </div>

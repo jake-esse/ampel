@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { Message } from './Message'
 import { EmptyState } from './EmptyState'
 import { useKeyboard } from '@/hooks/useKeyboard'
@@ -6,71 +6,105 @@ import type { Message as MessageType } from '@/types/chat'
 
 interface MessageListProps {
   messages: MessageType[]
-  keyboardVisible?: boolean
 }
 
 /**
  * Scrollable message list container
- * Smart auto-scroll: scrolls to bottom only when appropriate
- * - Scrolls on new message if user is at bottom
- * - Scrolls when keyboard appears if user is at bottom
- * - Does NOT scroll if user is reading older messages
+ * Smart scroll behavior:
+ * - When user sends a message, scrolls that message to TOP of viewport
+ * - Keeps user message at top while AI response streams below
+ * - Does NOT auto-scroll during streaming
  * Shows welcoming empty state when no messages
  */
-export function MessageList({ messages, keyboardVisible = false }: MessageListProps) {
-  const bottomRef = useRef<HTMLDivElement>(null)
+export function MessageList({ messages }: MessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [wasAtBottom, setWasAtBottom] = useState(true)
-  const prevKeyboardVisible = useRef(keyboardVisible)
+  const lastUserMessageRef = useRef<HTMLDivElement>(null)
+  const previousMessagesLengthRef = useRef(0)
 
-  // Get keyboard control utility
-  const { hideKeyboard } = useKeyboard()
+  // Get keyboard control utility (with height for dynamic padding)
+  const { hideKeyboard, isVisible: keyboardVisible, keyboardHeight } = useKeyboard()
 
-  // Check if user is at bottom of message list
-  const isAtBottom = (): boolean => {
-    if (!containerRef.current) return true
+  // Find the index of the last user message
+  // This is memoized to avoid recalculating on every render
+  const lastUserMessageIndex = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        return i
+      }
+    }
+    return -1
+  }, [messages])
 
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current
-    const threshold = 100 // pixels from bottom to consider "at bottom"
-
-    return scrollHeight - scrollTop - clientHeight < threshold
-  }
-
-  // Track scroll position to know if user is at bottom
+  // Scroll user message to top when new user message is added
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
+    const previousLength = previousMessagesLengthRef.current
+    const currentLength = messages.length
 
-    const handleScroll = () => {
-      setWasAtBottom(isAtBottom())
+    console.log('🔵 [MessageList] Message change - previous:', previousLength, 'current:', currentLength)
+    console.log('🔵 [MessageList] Keyboard visible:', keyboardVisible)
+
+    // Detect if a new user message was just added
+    if (currentLength > previousLength) {
+      const lastMessage = messages[messages.length - 1]
+      const secondToLastMessage = messages[messages.length - 2]
+
+      const newUserMessage =
+        (lastMessage?.role === 'user') ? lastMessage :
+        (secondToLastMessage?.role === 'user') ? secondToLastMessage :
+        null
+
+      if (newUserMessage) {
+        console.log('🟢 [MessageList] NEW USER MESSAGE DETECTED!')
+
+        // Visual debugging - flash the document title
+        const originalTitle = document.title
+        document.title = '🟢 NEW MESSAGE DETECTED!'
+        setTimeout(() => { document.title = originalTitle }, 1000)
+
+        // If keyboard is visible, wait for it to close before scrolling
+        // Otherwise scroll immediately
+        const delayMs = keyboardVisible ? 400 : 100
+
+        console.log('🟢 [MessageList] Will scroll in', delayMs, 'ms')
+
+        setTimeout(() => {
+          if (!containerRef.current || !lastUserMessageRef.current) {
+            console.log('🔴 [MessageList] Refs not available')
+            return
+          }
+
+          const container = containerRef.current
+          const element = lastUserMessageRef.current
+
+          console.log('🟢 [MessageList] Element offsetHeight:', element.offsetHeight)
+          console.log('🟢 [MessageList] Element offsetTop:', element.offsetTop)
+
+          // Only scroll if element has valid dimensions
+          if (element.offsetHeight === 0) {
+            console.log('🔴 [MessageList] Element not ready, skipping scroll')
+            return
+          }
+
+          // Calculate scroll position to place user message at top of viewport
+          // Account for container's padding-top (safe area + 1rem)
+          const containerPaddingTop = 16 // 1rem = 16px base (safe area adds more dynamically)
+          const scrollTop = element.offsetTop - containerPaddingTop
+
+          console.log('🟢 [MessageList] SCROLLING TO POSITION:', scrollTop)
+
+          // Scroll the container to position user message at top
+          container.scrollTo({
+            top: scrollTop,
+            behavior: 'smooth'
+          })
+
+          console.log('✅ [MessageList] Scroll command executed')
+        }, delayMs)
+      }
     }
 
-    container.addEventListener('scroll', handleScroll)
-    return () => container.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Smart auto-scroll on message changes
-  // Only scroll if user is at bottom (not reading old messages)
-  useEffect(() => {
-    if (wasAtBottom && bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [messages, wasAtBottom])
-
-  // Auto-scroll when keyboard appears (if user was at bottom)
-  useEffect(() => {
-    // Detect keyboard appearance (transition from hidden to visible)
-    const keyboardJustAppeared = !prevKeyboardVisible.current && keyboardVisible
-
-    if (keyboardJustAppeared && wasAtBottom && bottomRef.current) {
-      // Small delay to let keyboard animation start, then scroll
-      setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 50)
-    }
-
-    prevKeyboardVisible.current = keyboardVisible
-  }, [keyboardVisible, wasAtBottom])
+    previousMessagesLengthRef.current = currentLength
+  }, [messages, keyboardVisible])
 
   // Handle tap on message area to dismiss keyboard
   const handleTapToDismiss = () => {
@@ -84,10 +118,14 @@ export function MessageList({ messages, keyboardVisible = false }: MessageListPr
     <div
       ref={containerRef}
       onClick={handleTapToDismiss}
-      className="flex-1 overflow-y-auto px-4 py-4"
+      className="flex-1 overflow-y-auto px-2 py-4"
       style={{
         // iOS safe area support for top (notch/dynamic island)
         paddingTop: 'max(1rem, env(safe-area-inset-top))',
+        // Dynamic bottom padding to compensate for keyboard and fixed input
+        // When keyboard closed: 140px for fixed input
+        // When keyboard open: 140px + keyboardHeight to compensate for viewport shrink
+        paddingBottom: keyboardVisible ? `${140 + keyboardHeight}px` : '140px',
       }}
     >
       {/* Messages or empty state */}
@@ -95,11 +133,23 @@ export function MessageList({ messages, keyboardVisible = false }: MessageListPr
         <EmptyState />
       ) : (
         <>
-          {messages.map((message) => (
-            <Message key={message.id} message={message} />
-          ))}
-          {/* Invisible element to scroll to */}
-          <div ref={bottomRef} />
+          {messages.map((message, index) => {
+            // Attach ref to the last user message for scroll-to-top behavior
+            const isLastUserMessage = index === lastUserMessageIndex
+
+            return (
+              <div
+                key={message.id}
+                ref={isLastUserMessage ? lastUserMessageRef : null}
+                style={{
+                  // Explicit positioning for correct offsetTop calculation
+                  position: 'relative'
+                }}
+              >
+                <Message message={message} />
+              </div>
+            )
+          })}
         </>
       )}
     </div>

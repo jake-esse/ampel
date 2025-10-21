@@ -9,7 +9,6 @@ import {
   convertDbMessagesToFrontend,
 } from '@/lib/database/messages'
 import { streamConversationTitle } from '@/lib/ai/streaming-titles'
-import { useKeyboard } from '@/hooks/useKeyboard'
 import { useToast } from '@/hooks/useToast'
 import type { Message, StreamingStatus } from '@/types/chat'
 
@@ -33,9 +32,6 @@ export function ChatInterface({
   const [reasoning, setReasoning] = useState(false)
   const [webSearch, setWebSearch] = useState(false)
   const [streamingStatus, setStreamingStatus] = useState<StreamingStatus>('idle')
-
-  // Keyboard handling for smooth layout adjustment
-  const { isVisible: keyboardVisible, keyboardHeight } = useKeyboard()
 
   // Toast notifications for errors
   const { showToast } = useToast()
@@ -209,20 +205,11 @@ export function ChatInterface({
   }
 
   return (
-    <div
-      className="flex flex-col h-full bg-gray-900"
-      style={{
-        // Apply keyboard height as bottom padding to push content up
-        // This ensures the input stays visible above the keyboard
-        paddingBottom: `${keyboardHeight}px`,
-        // Smooth transition matching iOS native keyboard timing (0.25s)
-        transition: 'padding-bottom 0.25s ease-out',
-      }}
-    >
-      {/* Message list */}
-      <MessageList messages={messages} keyboardVisible={keyboardVisible} />
+    <div className="flex flex-col h-full">
+      {/* Message list - takes up available space */}
+      <MessageList messages={messages} />
 
-      {/* Input area with integrated controls */}
+      {/* Input area - now position: fixed, floats above content */}
       <ChatInput
         onSend={handleSendMessage}
         disabled={streamingStatus !== 'idle' || isLoadingHistory}
