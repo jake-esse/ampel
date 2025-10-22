@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
-import { Settings, Plus, Sprout } from 'lucide-react'
+import { Settings, Plus, Sprout, Grid3x3 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { ConversationList } from '../conversations/ConversationList'
 import type { Conversation } from '@/types/database'
 import { cn, getUserInitials } from '@/lib/utils'
+import { impact } from '@/hooks/useHaptics'
 
 interface DrawerProps {
   isOpen: boolean
@@ -27,6 +29,7 @@ export function Drawer({
   onSelectConversation,
   onLongPressConversation,
 }: DrawerProps) {
+  const navigate = useNavigate()
   // Prevent body scroll when drawer is open
   useEffect(() => {
     if (isOpen) {
@@ -66,7 +69,7 @@ export function Drawer({
       {/* Drawer */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 w-[75%] max-w-sm bg-[#F2F1ED] z-50',
+          'fixed inset-y-0 left-0 w-[75%] max-w-sm bg-white z-50',
           'border-r-[0.5px] border-[#E5E3DD]',
           'transform transition-transform duration-300 ease-in-out',
           'flex flex-col',
@@ -101,6 +104,22 @@ export function Drawer({
             aria-label="New chat"
           >
             <Plus className="w-3.5 h-3.5 text-white" />
+          </button>
+        </div>
+
+        {/* Apps navigation button */}
+        <div className="px-6 pb-2">
+          <button
+            onClick={() => {
+              impact('light')
+              navigate('/apps')
+              onClose()
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-200 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px]"
+            aria-label="Apps"
+          >
+            <Grid3x3 className="w-5 h-5 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">Apps</span>
           </button>
         </div>
 
@@ -148,7 +167,7 @@ export function Drawer({
           style={{
             height: 'env(safe-area-inset-bottom)',
           }}
-          className="bg-[#F2F1ED]"
+          className="bg-white"
         />
       </div>
     </>

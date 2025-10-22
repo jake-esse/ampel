@@ -182,7 +182,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#FDFCFA] overflow-hidden">
+    <div className="flex flex-col h-screen bg-white overflow-hidden">
       {/* Sliding content wrapper - pushes right when drawer opens */}
       <div
         className={cn(
@@ -193,7 +193,7 @@ export default function Chat() {
         {/* Header */}
         <header
           onClick={hideKeyboard}
-          className="bg-[#FDFCFA] rounded-b-3xl px-4 pt-4 pb-1 flex-shrink-0 border-b-[0.5px] border-[#E5E3DD]"
+          className="bg-white rounded-b-3xl px-4 pt-4 pb-1 flex-shrink-0 border-b-[0.5px] border-[#E5E3DD]"
           style={{
             // iOS safe area support for top (notch/Dynamic Island)
             paddingTop: 'max(1rem, env(safe-area-inset-top))',
@@ -207,7 +207,7 @@ export default function Chat() {
                 impact('light')
                 setDrawerOpen(true)
               }}
-              className="p-2.5 hover:bg-gray-100 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center z-10"
+              className="p-2.5 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center z-10"
               aria-label="Open menu"
             >
               <Menu className="w-5 h-5 text-gray-900" />

@@ -9,6 +9,8 @@ import { isNativePlatform, isAndroid } from './hooks/usePlatform'
 import { useNetworkStatus } from './hooks/useNetworkStatus'
 import Login from './pages/Login'
 import Chat from './pages/Chat'
+import Apps from './pages/Apps'
+import AppsAmpel from './pages/AppsAmpel'
 
 /**
  * Inner app component with network monitoring
@@ -59,6 +61,22 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Chat />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/apps"
+          element={
+            <ProtectedRoute>
+              <Apps />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/apps/ampel"
+          element={
+            <ProtectedRoute>
+              <AppsAmpel />
             </ProtectedRoute>
           }
         />

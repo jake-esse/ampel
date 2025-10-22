@@ -189,6 +189,118 @@ export class ChatMessage extends React.Component {
 - Mobile-first sizing (text-base, text-sm, not px values)
 - Use shadcn/ui components when available
 
+### Design System
+
+Ampel uses a **light theme** with warm, neutral colors and a clean, modern aesthetic.
+
+**Color Palette:**
+
+Backgrounds:
+- Main background: `bg-[#FDFCFA]` - Warm off-white/cream color used for primary page backgrounds
+- Secondary background: `bg-[#F2F1ED]` - Light beige/warm gray used for drawer, input fields, and secondary surfaces
+- Card/elevated surfaces: `bg-white` - Pure white for cards and elevated content
+- Active/selected state: `bg-[#30302E]` with `text-white` - Dark charcoal for active items
+
+Borders:
+- Default borders: `border-[#E5E3DD]` - Warm tan/beige border color
+- Border thickness: `border-[0.5px]` or `border` (1px)
+
+Primary Color:
+- `#30302E` - Dark charcoal used for buttons, active states, app icons
+- Tailwind config: `primary-500`, `primary-600`, `primary-700` etc.
+- Usage: `bg-[#30302E]`, `bg-primary-600`, `text-primary-500`
+
+Text Colors:
+- Primary text: `text-gray-900` - Main headings and important text
+- Secondary text: `text-gray-600` - Subheadings, descriptions, labels
+- Tertiary text: `text-gray-500` - Muted text, placeholders
+
+Interactive States:
+- Hover: `hover:bg-gray-50`, `hover:bg-gray-100`, `hover:bg-gray-200`
+- Active (press): `active:scale-95` or `active:scale-[0.98]`
+- Focus: `focus:ring-2 focus:ring-primary-600`
+- Selected/Active item: `bg-[#30302E]` with `text-white`
+
+**Typography:**
+
+Fonts:
+- Sans-serif: `font-sans` - DM Sans (default body text)
+- Serif: `font-serif` - Crimson Pro (headings, titles)
+
+Text Sizes:
+- Large headings: `text-2xl`, `text-3xl`, `text-5xl`
+- Headings: `text-lg`, `text-xl`
+- Body text: `text-base`
+- Small text: `text-sm`
+- Extra small: `text-xs`
+
+**Layout & Spacing:**
+
+Rounded Corners:
+- Small: `rounded-lg` (8px)
+- Medium: `rounded-xl` (12px)
+- Large: `rounded-2xl` (16px)
+- Headers: `rounded-3xl` or `rounded-b-3xl` (24px)
+- Circular: `rounded-full`
+
+Shadows:
+- Subtle elevation: `shadow-sm`
+
+Touch Targets:
+- Minimum height: `min-h-[44px]` (iOS standard)
+- Larger buttons: `min-h-[48px]` or `min-h-[56px]`
+- Minimum width: `min-w-[44px]`
+
+Transitions:
+- Default: `transition-all duration-150`
+- Longer transitions: `transition-all duration-300`
+
+**Safe Areas (iOS/Android):**
+
+Always account for device notches, home indicators, and status bars:
+
+```typescript
+// Header with safe area top
+<header
+  className="..."
+  style={{
+    paddingTop: 'max(1rem, env(safe-area-inset-top))'
+  }}
+>
+
+// Content with safe area bottom
+<main
+  className="..."
+  style={{
+    paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))'
+  }}
+>
+```
+
+**Common Patterns:**
+
+Button styles:
+```typescript
+// Primary button
+<button className="px-4 py-3 bg-[#30302E] hover:bg-primary-700 text-white font-medium rounded-xl transition-all duration-150 active:scale-[0.98] min-h-[48px]">
+
+// Secondary button
+<button className="px-4 py-3 bg-white hover:bg-gray-50 text-gray-900 font-medium rounded-xl transition-all duration-150 active:scale-[0.98] border border-[#E5E3DD] min-h-[48px]">
+
+// Icon button
+<button className="p-2.5 hover:bg-gray-100 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px]">
+```
+
+Card styles:
+```typescript
+<div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm">
+```
+
+Input styles:
+```typescript
+<input className="px-4 py-3 bg-[#F2F1ED] border border-[#E5E3DD] rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-600">
+```
+
 ### File Organization
 
 ```

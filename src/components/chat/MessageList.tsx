@@ -126,6 +126,10 @@ export function MessageList({ messages }: MessageListProps) {
         // When keyboard closed: 140px for fixed input
         // When keyboard open: 140px + keyboardHeight to compensate for viewport shrink
         paddingBottom: keyboardVisible ? `${140 + keyboardHeight}px` : '140px',
+        // Smooth transition when paddingBottom changes (keyboard open/close)
+        transition: 'padding-bottom 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        // GPU acceleration for smoother animation
+        willChange: 'padding-bottom',
       }}
     >
       {/* Messages or empty state */}
