@@ -24,3 +24,9 @@ export type Message = {
   tokens_used: number | null
   created_at: string
 }
+
+export type DeveloperWaitlist = {
+  id: string
+  email: string
+  created_at: string
+}

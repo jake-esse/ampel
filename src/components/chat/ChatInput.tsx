@@ -97,7 +97,7 @@ export function ChatInput({
     >
       <div className="max-w-4xl mx-auto">
         {/* Input container with solid background */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-3xl border-[0.5px] border-[#E5E3DD] shadow-sm overflow-hidden">
           {/* Textarea */}
           <textarea
             ref={textareaRef}
@@ -150,7 +150,7 @@ export function ChatInput({
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                     reasoning
                       ? 'bg-primary-600 text-white'
-                      : 'text-gray-500 hover:bg-gray-100'
+                      : 'text-gray-500'
                   )}
                   aria-label="Toggle reasoning mode"
                   title="Reasoning"
@@ -174,7 +174,7 @@ export function ChatInput({
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                     webSearch
                       ? 'bg-primary-600 text-white'
-                      : 'text-gray-500 hover:bg-gray-100'
+                      : 'text-gray-500'
                   )}
                   aria-label="Toggle web search"
                   title="Web Search"
