@@ -11,6 +11,7 @@ import Login from './pages/Login'
 import Chat from './pages/Chat'
 import Apps from './pages/Apps'
 import AppsAmpel from './pages/AppsAmpel'
+import { Disclosures } from './pages/Disclosures'
 
 /**
  * Inner app component with network monitoring
@@ -48,6 +49,14 @@ function AppContent() {
     <ConversationProvider>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route
+          path="/disclosures"
+          element={
+            <ProtectedRoute>
+              <Disclosures />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/chat"
           element={

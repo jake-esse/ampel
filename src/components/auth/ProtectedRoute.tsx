@@ -1,5 +1,8 @@
-import { Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabase'
+import type { Profile } from '@/types/database'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -8,12 +11,49 @@ interface ProtectedRouteProps {
 /**
  * Wrapper component that protects routes requiring authentication
  * Redirects to login page if user is not authenticated
+ * Redirects to disclosures page if user hasn't completed disclosures
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  const location = useLocation()
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
 
-  // Show loading spinner while checking auth status
-  if (loading) {
+  // Fetch user profile when authenticated or when location changes
+  // This ensures we have fresh profile data after updates (e.g., accepting disclosures)
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!user) {
+        setProfileLoading(false)
+        return
+      }
+
+      setProfileLoading(true)
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (error) {
+          console.error('Error fetching profile:', error)
+        } else {
+          setProfile(data)
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error)
+      } finally {
+        setProfileLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [user, location.pathname])
+
+  // Show loading spinner while checking auth status or profile
+  if (authLoading || profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <svg
@@ -45,6 +85,15 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/" replace />
   }
 
-  // User is authenticated, render the protected content
+  // Check if user needs to complete disclosures
+  const needsDisclosures = profile && !profile.disclosures_accepted_at
+  const isOnDisclosuresPage = location.pathname === '/disclosures'
+
+  // Redirect to disclosures if needed (and not already there)
+  if (needsDisclosures && !isOnDisclosuresPage) {
+    return <Navigate to="/disclosures" replace />
+  }
+
+  // User is authenticated and has completed disclosures (or is on disclosures page), render the protected content
   return <>{children}</>
 }
