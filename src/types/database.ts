@@ -6,6 +6,7 @@ export type Profile = {
   avatar_url: string | null
   auth_provider: 'email' | 'apple' | 'google'
   created_at: string
+  disclosures_accepted_at: string | null
 }
 
 export type Conversation = {
