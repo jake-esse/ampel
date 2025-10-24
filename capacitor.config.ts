@@ -6,9 +6,16 @@ const config: CapacitorConfig = {
   appName: 'Ampel',
   webDir: 'dist',
   server: {
-    url: 'http://192.168.1.165:5173',  // ← Your dev server
-    cleartext: true,                    // ← Allow HTTP (needed for local dev)
-    androidScheme: 'https'
+    url: 'https://lithophytic-kimbery-hyetological.ngrok-free.dev',  // ← ngrok HTTPS tunnel
+    cleartext: false,                   // ← Require HTTPS (needed for camera)
+    androidScheme: 'https',
+    // Allow Persona's domains for embedded KYC flow
+    allowNavigation: [
+      'withpersona.com',
+      '*.withpersona.com',
+      'persona.com',
+      '*.persona.com'
+    ]
   },
   plugins: {
     Keyboard: {

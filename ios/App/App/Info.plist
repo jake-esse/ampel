@@ -55,6 +55,16 @@
 				<string>com.ampel.app</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Ampel KYC Callback</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ampel</string>
+			</array>
+		</dict>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required to verify your identity</string>
 </dict>
 </plist>

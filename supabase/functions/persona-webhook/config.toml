@@ -1,0 +1,36 @@
+# ============================================================================
+# Persona Webhook Edge Function Configuration
+# ============================================================================
+#
+# This configuration file defines settings for the persona-webhook Edge Function.
+#
+# Documentation: https://supabase.com/docs/guides/functions
+
+[persona-webhook]
+# Disable JWT verification since Persona doesn't send JWT tokens
+# Authentication is handled via HMAC-SHA256 signature verification instead
+verify_jwt = false
+
+# Import map configuration (optional)
+# If you need to use a custom import map, uncomment and specify the path
+# import_map = "./import_map.json"
+
+# ============================================================================
+# Environment Variables Required:
+# ============================================================================
+# Set these via: supabase secrets set KEY=value
+#
+# - PERSONA_WEBHOOK_SECRET: Your webhook secret from Persona Dashboard
+#
+# Auto-provided by Supabase:
+# - SUPABASE_URL
+# - SUPABASE_SERVICE_ROLE_KEY
+# ============================================================================
+
+# ============================================================================
+# Deployment:
+# ============================================================================
+# Deploy with: supabase functions deploy persona-webhook --no-verify-jwt
+#
+# The --no-verify-jwt flag is required for public webhook endpoints.
+# ============================================================================
