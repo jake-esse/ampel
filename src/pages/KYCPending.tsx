@@ -20,17 +20,28 @@ export default function KYCPending() {
   const navigate = useNavigate()
   const { kycStatus } = useKYCStatus()
 
+  console.log('⏳ KYCPending: Rendered with status:', kycStatus?.status)
+
   // Listen for status changes and redirect accordingly
   useEffect(() => {
-    if (!kycStatus) return
+    console.log('⏳ KYCPending: useEffect triggered, status:', kycStatus?.status)
+
+    if (!kycStatus) {
+      console.log('⏳ KYCPending: No status yet, waiting...')
+      return
+    }
 
     // When approved, redirect to chat
     if (kycStatus.status === 'approved') {
+      console.log('⏳ KYCPending: Status is approved, redirecting to /chat')
       navigate('/chat', { replace: true })
     }
     // When declined or needs review, redirect to declined page
     else if (kycStatus.status === 'declined' || kycStatus.status === 'needs_review') {
+      console.log('⏳ KYCPending: Status is declined/needs_review, redirecting to /kyc-declined')
       navigate('/kyc-declined', { replace: true })
+    } else {
+      console.log('⏳ KYCPending: Status is', kycStatus.status, '- staying on pending page')
     }
   }, [kycStatus, navigate])
 
@@ -69,13 +80,16 @@ export default function KYCPending() {
             </h1>
 
             <p className="text-gray-600 text-base mb-6">
-              We're reviewing your identity verification. This usually takes just a few moments.
+              We're reviewing your identity verification. This typically takes 5-30 seconds.
             </p>
 
             {/* Info Box */}
-            <div className="bg-[#F2F1ED] border border-[#E5E3DD] rounded-xl p-4">
+            <div className="bg-[#F2F1ED] border border-[#E5E3DD] rounded-xl p-4 space-y-2">
               <p className="text-sm text-gray-700">
-                You'll be automatically redirected once verification is complete. Please keep this page open.
+                ⚡ You'll be automatically redirected once verification is complete.
+              </p>
+              <p className="text-sm text-gray-600">
+                Most verifications complete within seconds. If it takes longer than a minute, try refreshing the page.
               </p>
             </div>
           </div>
