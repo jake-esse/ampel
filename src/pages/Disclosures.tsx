@@ -67,11 +67,8 @@ export function Disclosures() {
   const [acknowledged, setAcknowledged] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Redirect to login if not authenticated
-  if (!user) {
-    navigate('/');
-    return null;
-  }
+  // No need to check auth here - ProtectedRoute wrapper already handles it
+  // This prevents infinite redirect loops
 
   const handleContinue = async () => {
     if (!acknowledged || !user) return;

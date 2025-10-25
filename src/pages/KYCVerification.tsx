@@ -4,6 +4,13 @@ import { Client } from 'persona'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { markKYCPending } from '@/lib/database/kyc'
+import { supabase } from '@/lib/supabase'
+
+// MODULE-LEVEL SINGLETON: Prevents multiple Persona instances across ALL component lifecycles
+// This persists even when component unmounts/remounts (React Strict Mode, navigation, etc.)
+let globalPersonaInstance: Client | null = null
+let isPersonaInitializing = false
+let hasPersonaInitialized = false
 
 /**
  * KYC Verification Page
@@ -32,11 +39,27 @@ export default function KYCVerification() {
   const { showToast } = useToast()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const clientRef = useRef<Client | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Initialize Persona embedded flow for ALL platforms
   useEffect(() => {
     if (!user) return
+
+    // CRITICAL FIX: Use module-level singleton to prevent multiple initializations
+    // This persists across component mount/unmount cycles (React Strict Mode, navigation, etc.)
+    if (hasPersonaInitialized || isPersonaInitializing) {
+      console.log('⚠️ Persona already initialized or initializing (module-level check), skipping...')
+      return
+    }
+
+    // Check if there's already a Persona instance in DOM
+    if (globalPersonaInstance) {
+      console.log('⚠️ Global Persona instance already exists, skipping initialization')
+      return
+    }
+
+    isPersonaInitializing = true
+    console.log('🎬 Starting Persona initialization (GLOBAL singleton - only once per page load)')
 
     const templateId = import.meta.env.VITE_PERSONA_TEMPLATE_ID
     const environmentId = import.meta.env.VITE_PERSONA_ENVIRONMENT_ID
@@ -51,94 +74,244 @@ export default function KYCVerification() {
       return
     }
 
-    // 30 second timeout for initialization
-    const timeoutId = setTimeout(() => {
-      console.error('Persona client timed out - onReady never called')
-      setError('Verification is taking too long to load. Please refresh the page or try again later.')
-      setIsLoading(false)
-    }, 30000)
+    // DEFENSIVE CHECK: Prevent re-initialization if user already completed KYC
+    // This handles cases where user somehow lands on /kyc after approval
+    async function checkExistingStatus() {
+      if (!user) return true // Allow initialization if user is null
 
-    try {
-      console.log('🌐 Creating embedded Persona Client...')
+      try {
+        const { data: profile, error: checkError } = await supabase
+          .from('profiles')
+          .select('kyc_status')
+          .eq('id', user.id)
+          .single()
 
-      const client = new Client({
-        templateId,
-        environmentId,  // Required for sandbox environment
-        environment: environment as 'sandbox' | 'production',
-        referenceId: user.id,
+        if (checkError) {
+          console.error('Error checking KYC status:', checkError)
+          // Continue with Persona init - better to show flow than block user
+          return true
+        }
 
-        // Mobile-optimized fullscreen sizing
-        frameHeight: '100vh',
-        frameWidth: '100%',
+        const status = profile?.kyc_status
 
-        onReady: () => {
-          console.log('✅ Persona client ready - opening flow')
-          clearTimeout(timeoutId)
+        console.log('Current KYC status:', status)
+
+        if (status === 'approved') {
+          console.log('✅ User already approved, redirecting to /chat')
+          navigate('/chat', { replace: true })
+          return false // Don't initialize Persona
+        } else if (status === 'pending') {
+          console.log('⏳ User status is pending, redirecting to /kyc-pending')
+          navigate('/kyc-pending', { replace: true })
+          return false // Don't initialize Persona
+        }
+
+        // Status is 'not_started', 'declined', or 'needs_review' - proceed with Persona
+        return true
+      } catch (err) {
+        console.error('Error in checkExistingStatus:', err)
+        // Continue with Persona init on error
+        return true
+      }
+    }
+
+    // Validate user session before initializing Persona
+    // This prevents stale sessions from causing database update failures
+    async function validateSession(): Promise<boolean> {
+      if (!user) return false // Don't initialize if user is null
+
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single()
+
+        if (error || !profile) {
+          console.error('❌ User profile not found - stale session detected')
+          console.error('Session validation error:', error)
+          setError('Your session is invalid. Please log out and log in again.')
           setIsLoading(false)
-          client.open()
-        },
 
-        onComplete: async ({ inquiryId, status }) => {
-          console.log('✅ Persona verification completed:', { inquiryId, status })
+          // Force logout after a brief delay to show error message
+          setTimeout(async () => {
+            await supabase.auth.signOut()
+          }, 2000)
 
-          try {
-            await markKYCPending(user.id, inquiryId)
+          return false
+        }
+
+        console.log('✅ Session validated, profile exists')
+        return true
+      } catch (err) {
+        console.error('Error validating session:', err)
+        setError('Failed to validate session. Please try again.')
+        setIsLoading(false)
+        return false
+      }
+    }
+
+    // Check existing status, then validate session, then initialize Persona
+    checkExistingStatus().then((shouldInitialize) => {
+      if (!shouldInitialize) return
+
+      validateSession().then((isValid) => {
+        if (!isValid) return
+        initializePersona()
+      })
+    })
+
+    function initializePersona() {
+      if (!user) {
+        setError('User session expired. Please refresh the page.')
+        setIsLoading(false)
+        isPersonaInitializing = false
+        return
+      }
+
+      // Mark that we've attempted initialization (module-level)
+      hasPersonaInitialized = true
+
+      // 30 second timeout for initialization
+      timeoutRef.current = setTimeout(() => {
+        console.error('Persona client timed out - onReady never called')
+        setError('Verification is taking too long to load. Please refresh the page or try again later.')
+        setIsLoading(false)
+        isPersonaInitializing = false
+        hasPersonaInitialized = false // Allow retry on timeout
+      }, 30000)
+
+      try {
+        console.log('🌐 Creating embedded Persona Client...')
+
+        const client = new Client({
+          templateId,
+          environmentId,  // Required for sandbox environment
+          environment: environment as 'sandbox' | 'production',
+          referenceId: user.id,
+
+          // Mobile-optimized fullscreen sizing
+          frameHeight: '100vh',
+          frameWidth: '100%',
+
+          onReady: () => {
+            console.log('✅ Persona client ready - opening flow')
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current)
+              timeoutRef.current = null
+            }
+            setIsLoading(false)
+            isPersonaInitializing = false
+            client.open()
+          },
+
+          onComplete: async ({ inquiryId, status }) => {
+            console.log('✅ Persona verification completed:', { inquiryId, status })
+
+            if (!user) {
+              console.error('User is null in onComplete callback')
+              setError('Session expired. Please refresh the page.')
+              return
+            }
+
+            try {
+              // Update database first
+              console.log('📝 Calling markKYCPending...')
+              await markKYCPending(user.id, inquiryId)
+              console.log('✅ markKYCPending completed successfully')
+
+              // Destroy the Persona client to clean up
+              if (globalPersonaInstance) {
+                try {
+                  globalPersonaInstance.destroy()
+                  globalPersonaInstance = null
+                  console.log('🧹 Persona client destroyed')
+                } catch (err) {
+                  console.debug('Error destroying client:', err)
+                }
+              }
+
+              // Show success toast
+              showToast({
+                type: 'info',
+                message: 'Verification submitted successfully'
+              })
+
+              console.log('🚀 Navigating to /kyc-pending with React Router...')
+
+              // Use React Router navigate instead of window.location
+              // This works better with routing guards and doesn't force a full page reload
+              navigate('/kyc-pending', { replace: true })
+
+              console.log('✅ Navigation triggered')
+            } catch (err) {
+              console.error('❌ Failed to save verification status:', err)
+              const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+              setError(`Failed to save verification: ${errorMessage}`)
+              showToast({
+                type: 'error',
+                message: 'Failed to save verification. Please try again.'
+              })
+            }
+          },
+
+          onCancel: ({ inquiryId }) => {
+            console.log('⚠️ Persona verification canceled:', inquiryId)
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current)
+              timeoutRef.current = null
+            }
+            setError('You must complete identity verification to use Ampel.')
             showToast({
               type: 'info',
-              message: 'Verification submitted successfully'
+              message: 'Verification canceled'
             })
-            navigate('/kyc-pending', { replace: true })
-          } catch (err) {
-            console.error('❌ Failed to save verification status:', err)
-            setError('Failed to save verification status. Please contact support.')
+          },
+
+          onError: (error) => {
+            console.error('❌ Persona verification error:', error)
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current)
+              timeoutRef.current = null
+            }
+            setError(`Verification failed: ${error.code || 'Unknown error'}. Please try again or contact support.`)
+            setIsLoading(false)
             showToast({
               type: 'error',
-              message: 'Failed to save verification. Please try again.'
+              message: 'Verification failed. Please try again.'
             })
           }
-        },
+        })
 
-        onCancel: ({ inquiryId }) => {
-          console.log('⚠️ Persona verification canceled:', inquiryId)
-          clearTimeout(timeoutId)
-          setError('You must complete identity verification to use Ampel.')
-          showToast({
-            type: 'info',
-            message: 'Verification canceled'
-          })
-        },
-
-        onError: (error) => {
-          console.error('❌ Persona verification error:', error)
-          clearTimeout(timeoutId)
-          setError(`Verification failed: ${error.code || 'Unknown error'}. Please try again or contact support.`)
-          setIsLoading(false)
-          showToast({
-            type: 'error',
-            message: 'Verification failed. Please try again.'
-          })
+        console.log('✅ Persona Client created successfully')
+        globalPersonaInstance = client
+        isPersonaInitializing = false
+      } catch (err) {
+        console.error('❌ Failed to initialize Persona client:', err)
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
         }
-      })
-
-      console.log('✅ Persona Client created successfully')
-      clientRef.current = client
-
-      return () => {
-        clearTimeout(timeoutId)
-        if (clientRef.current) {
-          try {
-            console.log('Destroying Persona client...')
-            clientRef.current.destroy()
-          } catch (err) {
-            console.debug('Error destroying Persona client:', err)
-          }
-        }
+        setError('Failed to load verification. Please try again or contact support.')
+        setIsLoading(false)
+        isPersonaInitializing = false
+        hasPersonaInitialized = false // Allow retry on error
       }
-    } catch (err) {
-      console.error('❌ Failed to initialize Persona client:', err)
-      clearTimeout(timeoutId)
-      setError('Failed to load verification. Please try again or contact support.')
-      setIsLoading(false)
+    }
+
+    // Cleanup function - runs when component unmounts
+    return () => {
+      console.log('🧹 Cleanup: Component unmounting (but NOT destroying Persona - it persists)')
+
+      // Clear any pending timeouts
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+
+      // DON'T destroy Persona here - it should persist until onComplete
+      // DON'T reset module-level flags - they should persist across remounts
+      // This prevents React Strict Mode from creating multiple instances
     }
   }, [user, navigate, showToast])
 

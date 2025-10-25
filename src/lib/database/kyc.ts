@@ -64,9 +64,29 @@ export async function getKYCStatus(userId: string): Promise<KYCStatus | null> {
  *
  * @param userId - The authenticated user's ID
  * @param inquiryId - The Persona inquiry ID returned from the embedded flow
+ * @throws Error if profile doesn't exist or update fails
  */
 export async function markKYCPending(userId: string, inquiryId: string): Promise<void> {
-  const { error } = await supabase
+  // First, verify the user's profile exists
+  // This catches stale session issues where the user was deleted
+  const { data: existingProfile, error: checkError } = await supabase
+    .from('profiles')
+    .select('id, kyc_status')
+    .eq('id', userId)
+    .single()
+
+  if (checkError || !existingProfile) {
+    console.error('❌ Profile not found for user:', userId)
+    console.error('Check error:', checkError)
+    throw new Error(
+      'User profile not found. Your session may be outdated. Please log out and log in again.'
+    )
+  }
+
+  console.log('Profile found, current KYC status:', existingProfile.kyc_status)
+
+  // Update the profile with KYC pending status
+  const { data, error } = await supabase
     .from('profiles')
     .update({
       kyc_status: 'pending',
@@ -75,11 +95,26 @@ export async function markKYCPending(userId: string, inquiryId: string): Promise
       updated_at: new Date().toISOString()
     })
     .eq('id', userId)
+    .select()
 
   if (error) {
-    console.error('Error updating KYC status:', error)
+    console.error('❌ Error updating KYC status:', error)
     throw new Error(`Failed to update KYC status: ${error.message}`)
   }
 
-  console.log('✅ KYC status updated to pending:', { userId, inquiryId })
+  // Verify rows were actually updated
+  // Without .select(), Supabase returns { error: null } even if no rows matched
+  if (!data || data.length === 0) {
+    console.error('❌ No rows updated for user:', userId)
+    throw new Error(
+      'Failed to update profile. This may be due to permission issues. Please contact support.'
+    )
+  }
+
+  console.log('✅ KYC status updated to pending:', {
+    userId,
+    inquiryId,
+    rowsUpdated: data.length,
+    newStatus: data[0].kyc_status
+  })
 }

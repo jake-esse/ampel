@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
 import { useKYCStatus } from '@/hooks/useKYCStatus'
 
 interface KYCGuardProps {
@@ -41,50 +42,77 @@ interface KYCGuardProps {
  * 3. Only approved users can access nested routes
  */
 export function KYCGuard({ children }: KYCGuardProps) {
-  const { kycStatus, loading } = useKYCStatus()
+  const { user, loading: authLoading } = useAuth()
+  const { kycStatus, loading: kycLoading } = useKYCStatus()
   const navigate = useNavigate()
+
+  // Combined loading state: wait for both auth AND KYC status to load
+  const loading = authLoading || kycLoading
 
   // Route based on KYC status
   useEffect(() => {
-    // Wait for status to load
+    console.log('🔒 KYCGuard: Checking status', {
+      authLoading,
+      kycLoading,
+      user: !!user,
+      kycStatus: kycStatus?.status
+    })
+
+    // Wait for both auth and KYC status to load
+    // This prevents redirect loops when user becomes temporarily null during navigation
     if (loading) {
+      console.log('🔒 KYCGuard: Still loading (auth or KYC), waiting...')
+      return
+    }
+
+    // If no user after loading, something is wrong (shouldn't happen with ProtectedRoute)
+    if (!user) {
+      console.log('🔒 KYCGuard: No user after loading, redirecting to login')
+      navigate('/', { replace: true })
       return
     }
 
     // If no status data, something went wrong - redirect to KYC
     if (!kycStatus) {
+      console.log('🔒 KYCGuard: No status data, redirecting to /kyc')
       navigate('/kyc', { replace: true })
       return
     }
 
     // Route based on current status
+    console.log('🔒 KYCGuard: Routing based on status:', kycStatus.status)
     switch (kycStatus.status) {
       case 'not_started':
         // User hasn't started KYC - redirect to verification page
+        console.log('🔒 KYCGuard: Status is not_started, redirecting to /kyc')
         navigate('/kyc', { replace: true })
         break
 
       case 'pending':
         // User completed flow, waiting for approval - show pending screen
+        console.log('🔒 KYCGuard: Status is pending, redirecting to /kyc-pending')
         navigate('/kyc-pending', { replace: true })
         break
 
       case 'declined':
       case 'needs_review':
         // Verification was declined or needs manual review
+        console.log('🔒 KYCGuard: Status is declined/needs_review, redirecting to /kyc-declined')
         navigate('/kyc-declined', { replace: true })
         break
 
       case 'approved':
         // User is approved - allow access to protected routes
         // No redirect needed, render children
+        console.log('🔒 KYCGuard: Status is approved, allowing access')
         break
 
       default:
         // Unknown status - redirect to start
+        console.log('🔒 KYCGuard: Unknown status, redirecting to /kyc')
         navigate('/kyc', { replace: true })
     }
-  }, [kycStatus, loading, navigate])
+  }, [user, kycStatus, loading, navigate])
 
   // Show loading spinner while checking status
   if (loading) {
