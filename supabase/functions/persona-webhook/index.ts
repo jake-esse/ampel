@@ -65,72 +65,191 @@ interface WebhookResponse {
 /**
  * Verifies the Persona webhook signature using HMAC-SHA256.
  *
- * Persona signs webhooks by computing HMAC-SHA256 of the raw request body
- * using your webhook secret. The signature is sent in the Persona-Signature header.
+ * DIAGNOSTIC MODE: Enhanced logging to identify signature verification failures.
+ *
+ * Persona signs webhooks using a versioned signature scheme similar to Stripe.
+ * The Persona-Signature header contains: "t=<timestamp>,v1=<signature>"
+ * where the signature is computed as: HMAC-SHA256(secret, "{timestamp}.{body}")
+ *
+ * During secret rotation, multiple signatures may be present:
+ * "t=1234567890,v1=sig1... t=1234567890,v1=sig2..."
+ *
+ * Documentation: https://docs.withpersona.com/docs/webhooks-best-practices
  *
  * @param body - Raw request body as string
- * @param signature - Signature from Persona-Signature header
+ * @param signatureHeader - Full Persona-Signature header value
  * @returns Promise<boolean> - True if signature is valid
  */
-async function verifySignature(body: string, signature: string | null): Promise<boolean> {
-  if (!signature) {
-    console.error('Missing Persona-Signature header')
+async function verifySignature(body: string, signatureHeader: string | null): Promise<boolean> {
+  console.log('🔍 === DIAGNOSTIC MODE: SIGNATURE VERIFICATION ===')
+
+  if (!signatureHeader) {
+    console.error('❌ Missing Persona-Signature header')
     return false
   }
 
   const webhookSecret = Deno.env.get('PERSONA_WEBHOOK_SECRET')
   if (!webhookSecret) {
-    console.error('PERSONA_WEBHOOK_SECRET environment variable not configured')
+    console.error('❌ PERSONA_WEBHOOK_SECRET not found in environment')
     throw new Error('Webhook secret not configured')
   }
 
   try {
-    // Encode the webhook secret and body
-    const encoder = new TextEncoder()
-    const keyData = encoder.encode(webhookSecret)
-    const bodyData = encoder.encode(body)
+    // Log secret verification (safe - only showing length and edges)
+    console.log('🔑 Secret verification:')
+    console.log(`  Length: ${webhookSecret.length} characters`)
+    console.log(`  First 4 chars: "${webhookSecret.substring(0, 4)}"`)
+    console.log(`  Last 4 chars: "${webhookSecret.substring(webhookSecret.length - 4)}"`)
+    console.log(`  Has leading whitespace: ${webhookSecret !== webhookSecret.trimStart()}`)
+    console.log(`  Has trailing whitespace: ${webhookSecret !== webhookSecret.trimEnd()}`)
+    console.log(`  Has newlines: ${webhookSecret.includes('\n') || webhookSecret.includes('\r')}`)
 
-    // Import the secret as a CryptoKey for HMAC
-    const key = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    )
+    // Log signature header details
+    console.log('\n📝 Signature header:')
+    console.log(`  Raw value: "${signatureHeader}"`)
+    console.log(`  Length: ${signatureHeader.length} characters`)
+    console.log(`  Has leading whitespace: ${signatureHeader !== signatureHeader.trimStart()}`)
+    console.log(`  Has trailing whitespace: ${signatureHeader !== signatureHeader.trimEnd()}`)
 
-    // Compute the HMAC-SHA256 signature
-    const signatureBuffer = await crypto.subtle.sign('HMAC', key, bodyData)
+    // Log request body details
+    console.log('\n📦 Request body:')
+    console.log(`  Length: ${body.length} bytes`)
+    console.log(`  First 200 chars: "${body.substring(0, 200)}"`)
+    console.log(`  Contains newlines: ${body.includes('\n')}`)
+    console.log(`  Contains carriage returns: ${body.includes('\r')}`)
 
-    // Convert signature to lowercase hex string
-    const computedSignature = Array.from(new Uint8Array(signatureBuffer))
-      .map(byte => byte.toString(16).padStart(2, '0'))
-      .join('')
+    // Parse signature header: "t=1234567890,v1=abc123..." or multiple during rotation
+    // Multiple signatures are separated by spaces: "t=123,v1=abc t=123,v1=def"
+    const signatureSets = signatureHeader.trim().split(' ')
+    console.log(`\n🔍 Found ${signatureSets.length} signature set(s) in header`)
 
-    // Compare signatures (case-insensitive, timing-safe)
-    const providedSignature = signature.toLowerCase()
+    // Try each signature set (important for secret rotation)
+    for (let i = 0; i < signatureSets.length; i++) {
+      const sigSet = signatureSets[i]
+      console.log(`\n📍 === Processing signature set ${i + 1}/${signatureSets.length} ===`)
+      console.log(`  Raw signature set: "${sigSet}"`)
 
-    // Timing-safe comparison
-    if (computedSignature.length !== providedSignature.length) {
-      return false
-    }
+      const parts = sigSet.split(',')
+      let timestamp: string | null = null
+      let signature: string | null = null
 
-    let isMatch = true
-    for (let i = 0; i < computedSignature.length; i++) {
-      if (computedSignature[i] !== providedSignature[i]) {
-        isMatch = false
+      // Parse key=value pairs
+      for (const part of parts) {
+        const [key, value] = part.split('=')
+        if (key === 't') timestamp = value
+        if (key === 'v1') signature = value
+      }
+
+      if (!timestamp || !signature) {
+        console.warn(`  ⚠️ Invalid signature format - missing t or v1`)
+        console.warn(`  Parsed parts:`, parts)
+        continue // Try next signature set
+      }
+
+      console.log(`  ✓ Extracted timestamp: ${timestamp}`)
+      console.log(`  ✓ Extracted signature (first 8): ${signature.substring(0, 8)}...`)
+
+      // Validate timestamp (reject if >5 minutes old to prevent replay attacks)
+      const now = Math.floor(Date.now() / 1000)
+      const timestampNum = parseInt(timestamp, 10)
+      const age = now - timestampNum
+
+      console.log(`\n  ⏰ Timestamp validation:`)
+      console.log(`    Server Unix time: ${now}`)
+      console.log(`    Webhook Unix time: ${timestampNum}`)
+      console.log(`    Age: ${age} seconds (${Math.floor(age / 60)} minutes)`)
+      console.log(`    Valid (< 300s): ${age <= 300}`)
+
+      if (age > 300) {
+        console.warn(`  ⚠️ Timestamp too old: ${age} seconds - skipping this signature`)
+        continue // Try next signature set
+      }
+
+      // Construct signed payload: "{timestamp}.{body}"
+      // This is the CRITICAL difference from the old implementation
+      const signedPayload = `${timestamp}.${body}`
+      console.log(`\n  🔨 Signed payload construction:`)
+      console.log(`    Format: "timestamp.body"`)
+      console.log(`    Timestamp part: "${timestamp}"`)
+      console.log(`    Separator: "."`)
+      console.log(`    Body part (first 100): "${body.substring(0, 100)}..."`)
+      console.log(`    Combined length: ${signedPayload.length} characters`)
+      console.log(`    First 100 of combined: "${signedPayload.substring(0, 100)}..."`)
+
+      // Compute HMAC-SHA256 of the signed payload
+      const encoder = new TextEncoder()
+      const keyData = encoder.encode(webhookSecret)
+      const payloadData = encoder.encode(signedPayload)
+
+      console.log(`\n  🔐 HMAC-SHA256 computation:`)
+      console.log(`    Key bytes: ${keyData.length}`)
+      console.log(`    Payload bytes: ${payloadData.length}`)
+
+      const key = await crypto.subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      )
+
+      const signatureBuffer = await crypto.subtle.sign('HMAC', key, payloadData)
+
+      // Convert to hex string
+      const computedSignature = Array.from(new Uint8Array(signatureBuffer))
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('')
+
+      // Timing-safe comparison
+      const providedSignature = signature.toLowerCase()
+
+      console.log(`\n  📊 Signature comparison:`)
+      console.log(`    Computed:  ${computedSignature}`)
+      console.log(`    Provided:  ${providedSignature}`)
+      console.log(`    Computed length: ${computedSignature.length}`)
+      console.log(`    Provided length: ${providedSignature.length}`)
+
+      if (computedSignature.length !== providedSignature.length) {
+        console.warn(`  ❌ Length mismatch - skipping this signature`)
+        continue // Try next signature set
+      }
+
+      // Find first mismatch position
+      let firstMismatch = -1
+      let isMatch = true
+      for (let j = 0; j < computedSignature.length; j++) {
+        if (computedSignature[j] !== providedSignature[j]) {
+          isMatch = false
+          if (firstMismatch === -1) firstMismatch = j
+        }
+      }
+
+      if (isMatch) {
+        console.log(`  ✅ *** SIGNATURES MATCH! VERIFICATION SUCCESSFUL! ***`)
+        console.log('🔍 === END DIAGNOSTIC - SUCCESS ===\n')
+        return true
+      } else {
+        console.log(`  ❌ Signature mismatch`)
+        console.log(`  First mismatch at character position: ${firstMismatch}`)
+        if (firstMismatch >= 0) {
+          const contextStart = Math.max(0, firstMismatch - 5)
+          const contextEnd = Math.min(computedSignature.length, firstMismatch + 15)
+          console.log(`  Context around mismatch:`)
+          console.log(`    Computed: ...${computedSignature.substring(contextStart, contextEnd)}...`)
+          console.log(`    Provided: ...${providedSignature.substring(contextStart, contextEnd)}...`)
+          console.log(`    Position:    ${' '.repeat(firstMismatch - contextStart)}^`)
+        }
       }
     }
 
-    if (!isMatch) {
-      console.error('Signature mismatch')
-      console.error('Computed:', computedSignature.substring(0, 20) + '...')
-      console.error('Provided:', providedSignature.substring(0, 20) + '...')
-    }
-
-    return isMatch
+    // None of the signatures matched
+    console.error('\n❌ *** ALL SIGNATURE VERIFICATIONS FAILED ***')
+    console.log('🔍 === END DIAGNOSTIC - FAILURE ===\n')
+    return false
   } catch (error) {
-    console.error('Error verifying signature:', error)
+    console.error('💥 Exception during signature verification:', error)
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'N/A')
+    console.log('🔍 === END DIAGNOSTIC - ERROR ===\n')
     return false
   }
 }
@@ -177,6 +296,29 @@ async function handleEvent(eventName: string, inquiry: any): Promise<void> {
 
   console.log(`Processing event: ${eventName} for reference: ${referenceId}`)
 
+  // IDEMPOTENCY CHECK: Fetch current status to prevent downgrades
+  const { data: currentProfile } = await supabase
+    .from('profiles')
+    .select('kyc_status, persona_inquiry_id')
+    .eq('persona_reference_id', referenceId)
+    .single()
+
+  const currentStatus = currentProfile?.kyc_status
+  const currentInquiryId = currentProfile?.persona_inquiry_id
+
+  console.log(`Current status in database: ${currentStatus}`)
+  console.log(`Current inquiry ID: ${currentInquiryId}`)
+
+  // Define status priority (higher number = higher priority)
+  // This prevents status downgrades when webhooks arrive out of order
+  const statusPriority: Record<string, number> = {
+    'not_started': 0,
+    'pending': 1,
+    'needs_review': 2,
+    'declined': 3,
+    'approved': 3  // approved and declined have same priority (both terminal states)
+  }
+
   // Prepare base update object
   const updates: any = {
     persona_inquiry_id: inquiryId,
@@ -189,36 +331,60 @@ async function handleEvent(eventName: string, inquiry: any): Promise<void> {
   }
 
   // Map event to KYC status
+  let newStatus: string | null = null
+
   switch (eventName) {
     case 'inquiry.completed':
-      updates.kyc_status = 'pending'
-      console.log('Inquiry completed, status set to pending')
+      newStatus = 'pending'
+      updates.kyc_status = newStatus
+      console.log('Inquiry completed, mapping to pending status')
       break
 
     case 'inquiry.approved':
-      updates.kyc_status = 'approved'
+      newStatus = 'approved'
+      updates.kyc_status = newStatus
       updates.kyc_completed_at = inquiry.attributes['completed-at'] || new Date().toISOString()
-      console.log('Inquiry approved, status set to approved')
+      console.log('Inquiry approved, mapping to approved status')
       break
 
     case 'inquiry.declined':
-      updates.kyc_status = 'declined'
+      newStatus = 'declined'
+      updates.kyc_status = newStatus
       updates.kyc_declined_reason = 'Verification failed per Persona decision'
       const declinedAt = inquiry.attributes['declined-at']
       if (declinedAt) {
         console.log(`Inquiry declined at ${declinedAt}`)
       }
-      console.log('Inquiry declined, status set to declined')
+      console.log('Inquiry declined, mapping to declined status')
       break
 
     case 'inquiry.marked-for-review':
-      updates.kyc_status = 'needs_review'
-      console.log('Inquiry marked for review, status set to needs_review')
+      newStatus = 'needs_review'
+      updates.kyc_status = newStatus
+      console.log('Inquiry marked for review, mapping to needs_review status')
       break
 
     default:
       console.log(`Unhandled event type: ${eventName}, skipping database update`)
       return // Don't update for unknown events
+  }
+
+  // Check for status downgrade
+  if (currentStatus && newStatus) {
+    const currentPriority = statusPriority[currentStatus] || 0
+    const newPriority = statusPriority[newStatus] || 0
+
+    if (newPriority < currentPriority) {
+      console.warn(`⚠️ PREVENTED STATUS DOWNGRADE: ${currentStatus} -> ${newStatus}`)
+      console.warn(`Current priority: ${currentPriority}, New priority: ${newPriority}`)
+      console.warn(`Webhook event ${eventName} arrived after status already progressed`)
+      console.log('Skipping database update to prevent status downgrade')
+      return // Don't update - prevent downgrade
+    } else if (newPriority === currentPriority && currentStatus === newStatus) {
+      console.log(`ℹ️ Status unchanged: ${currentStatus} -> ${newStatus}`)
+      console.log('Same inquiry ID, duplicate webhook - skipping update')
+      return // Same status, no need to update
+    }
   }
 
   // Update the profile using reference_id
