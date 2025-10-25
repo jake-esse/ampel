@@ -7,6 +7,13 @@ export type Profile = {
   auth_provider: 'email' | 'apple' | 'google'
   created_at: string
   disclosures_accepted_at: string | null
+  kyc_status: 'not_started' | 'pending' | 'approved' | 'declined' | 'needs_review'
+  kyc_completed_at: string | null
+  kyc_declined_reason: string | null
+  persona_inquiry_id: string | null
+  persona_account_id: string | null
+  persona_reference_id: string | null
+  updated_at: string
 }
 
 export type Conversation = {

@@ -55,9 +55,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Show loading spinner while checking auth status or profile
   if (authLoading || profileLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-[#FDFCFA]">
         <svg
-          className="animate-spin h-8 w-8 text-primary"
+          className="animate-spin h-8 w-8 text-[#30302E]"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"

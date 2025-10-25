@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { KYCGuard } from './components/auth/KYCGuard'
 import { ConversationProvider } from './contexts/ConversationContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { ToastContainer } from './components/ui/ToastContainer'
@@ -12,6 +13,9 @@ import Chat from './pages/Chat'
 import Apps from './pages/Apps'
 import AppsAmpel from './pages/AppsAmpel'
 import { Disclosures } from './pages/Disclosures'
+import KYCVerification from './pages/KYCVerification'
+import KYCPending from './pages/KYCPending'
+import KYCDeclined from './pages/KYCDeclined'
 
 /**
  * Inner app component with network monitoring
@@ -48,7 +52,10 @@ function AppContent() {
   return (
     <ConversationProvider>
       <Routes>
+        {/* Public routes */}
         <Route path="/" element={<Login />} />
+
+        {/* Auth-required routes (no KYC required) */}
         <Route
           path="/disclosures"
           element={
@@ -58,10 +65,38 @@ function AppContent() {
           }
         />
         <Route
+          path="/kyc"
+          element={
+            <ProtectedRoute>
+              <KYCVerification />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kyc-pending"
+          element={
+            <ProtectedRoute>
+              <KYCPending />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kyc-declined"
+          element={
+            <ProtectedRoute>
+              <KYCDeclined />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected routes (require auth + disclosures + KYC approval) */}
+        <Route
           path="/chat"
           element={
             <ProtectedRoute>
-              <Chat />
+              <KYCGuard>
+                <Chat />
+              </KYCGuard>
             </ProtectedRoute>
           }
         />
@@ -69,7 +104,9 @@ function AppContent() {
           path="/chat/:conversationId"
           element={
             <ProtectedRoute>
-              <Chat />
+              <KYCGuard>
+                <Chat />
+              </KYCGuard>
             </ProtectedRoute>
           }
         />
@@ -77,7 +114,9 @@ function AppContent() {
           path="/apps"
           element={
             <ProtectedRoute>
-              <Apps />
+              <KYCGuard>
+                <Apps />
+              </KYCGuard>
             </ProtectedRoute>
           }
         />
@@ -85,10 +124,14 @@ function AppContent() {
           path="/apps/ampel"
           element={
             <ProtectedRoute>
-              <AppsAmpel />
+              <KYCGuard>
+                <AppsAmpel />
+              </KYCGuard>
             </ProtectedRoute>
           }
         />
+
+        {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
