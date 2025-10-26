@@ -46,3 +46,6 @@ android/app/build
 
 # Claude Code
 .claude/
+
+# Supabase temporary files
+supabase/.temp/

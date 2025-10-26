@@ -53,6 +53,10 @@ export function useKYCStatus() {
     // Only re-run if user ID actually changed (prevents loops on same user)
     if (userIdRef.current === user.id) {
       console.log('📊 useKYCStatus: Same user, skipping re-initialization')
+      // CRITICAL: If we have a status already, ensure we're not stuck in loading
+      if (kycStatus) {
+        setLoading(false)
+      }
       return
     }
 
@@ -126,12 +130,16 @@ export function useKYCStatus() {
     const isOnPendingPage = window.location.pathname === '/kyc-pending'
     const pollingDelay = isOnPendingPage ? 2000 : 5000 // 2s on pending page, 5s elsewhere
 
-    pollingTimeoutRef.current = setTimeout(() => {
-      // Get the initial status to determine if we should poll
-      const initialStatus = kycStatus?.status
+    pollingTimeoutRef.current = setTimeout(async () => {
+      // Check current status without updating state to avoid re-renders
+      if (!user) return
+
+      const currentStatus = await getKYCStatus(user.id)
+      console.log('📊 useKYCStatus: Checking if we should poll, current status:', currentStatus?.status)
 
       // Don't start polling if status is already terminal
-      if (initialStatus === 'approved' || initialStatus === 'declined') {
+      // Don't update state here - this is just a check
+      if (currentStatus?.status === 'approved' || currentStatus?.status === 'declined') {
         console.log('📊 useKYCStatus: Status is already terminal, skipping polling')
         return
       }
@@ -175,7 +183,7 @@ export function useKYCStatus() {
       // Reset user ID ref on cleanup to allow re-initialization if needed
       userIdRef.current = null
     }
-  }, [user, authLoading]) // Removed lastRealtimeUpdate from dependencies - use ref instead
+  }, [user, authLoading]) // Dependencies: only re-run when user or auth loading changes
 
   /**
    * Load the user's current KYC status from the database

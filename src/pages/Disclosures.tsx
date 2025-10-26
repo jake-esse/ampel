@@ -84,8 +84,12 @@ export function Disclosures() {
 
       if (error) throw error;
 
-      // Navigate to chat
-      navigate('/chat');
+      // Add a small delay to ensure database replication completes
+      // This prevents the ProtectedRoute from fetching stale data
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Navigate to chat with state indicating disclosures were just accepted
+      navigate('/chat', { state: { disclosuresAccepted: true } });
     } catch (error) {
       console.error('Error accepting disclosures:', error);
       showToast({
