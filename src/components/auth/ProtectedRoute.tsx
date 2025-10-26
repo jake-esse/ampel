@@ -19,11 +19,48 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
 
-  // Fetch user profile when authenticated or when location changes
-  // This ensures we have fresh profile data after updates (e.g., accepting disclosures)
+  // Check if we're navigating from disclosures after acceptance
+  const disclosuresJustAccepted = location.state?.disclosuresAccepted === true
+
+  // Fetch user profile when authenticated
+  // ONLY refetch when user changes or disclosures were just accepted
+  // Do NOT refetch on every route change to prevent unnecessary loading states
   useEffect(() => {
     async function fetchProfile() {
       if (!user) {
+        setProfileLoading(false)
+        return
+      }
+
+      // Skip immediate fetch if disclosures were just accepted
+      // The delay in Disclosures.tsx ensures the database is updated
+      if (disclosuresJustAccepted) {
+        // Set a temporary profile with disclosures accepted
+        setProfile(prev => prev ? { ...prev, disclosures_accepted_at: new Date().toISOString() } : null)
+        setProfileLoading(false)
+
+        // Fetch fresh data after a delay to confirm
+        setTimeout(async () => {
+          try {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single()
+
+            if (!error && data) {
+              setProfile(data)
+            }
+          } catch (error) {
+            console.error('Error fetching profile:', error)
+          }
+        }, 1000)
+        return
+      }
+
+      // If we already have a profile for this user, don't refetch
+      // This prevents unnecessary loading states when navigating between routes
+      if (profile && profile.id === user.id) {
         setProfileLoading(false)
         return
       }
@@ -50,7 +87,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
 
     fetchProfile()
-  }, [user, location.pathname])
+  }, [user, disclosuresJustAccepted, profile]) // Added profile to check if we already have it
 
   // Show loading spinner while checking auth status or profile
   if (authLoading || profileLoading) {

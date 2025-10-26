@@ -23,7 +23,7 @@ export default function Chat() {
   const { user } = useAuth()
   const { conversationId } = useParams<{ conversationId: string }>()
   const navigate = useNavigate()
-  const { conversations, addConversation, updateConversation, removeConversation } =
+  const { addConversation, updateConversation, removeConversation } =
     useConversations()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -60,21 +60,10 @@ export default function Chat() {
     loadConversationTitle()
   }, [conversationId])
 
-  // Load most recent conversation if no conversationId in URL
-  useEffect(() => {
-    async function loadMostRecentConversation() {
-      if (!user || conversationId) return
-
-      // Use conversations from context
-      if (conversations.length > 0) {
-        // Navigate to most recent conversation
-        navigate(`/chat/${conversations[0].id}`, { replace: true })
-      }
-      // If no conversations, stay on /chat with empty state
-    }
-
-    loadMostRecentConversation()
-  }, [user, conversationId, navigate, conversations])
+  // REMOVED: Auto-loading most recent conversation
+  // Users should always start with a fresh chat screen when opening the app
+  // This provides a cleaner experience and allows them to start new conversations
+  // without having to manually create a new chat each time
 
   const handleCreateNewConversation = async () => {
     if (!user) return
@@ -115,17 +104,11 @@ export default function Chat() {
       // Remove from context immediately
       removeConversation(deleteConfirmation.id)
 
-      // If we deleted the current conversation, navigate away
+      // If we deleted the current conversation, navigate to fresh chat
       if (deleteConfirmation.id === conversationId) {
-        // Use conversations from context to find next conversation
-        const remainingConversations = conversations.filter(
-          (c) => c.id !== deleteConfirmation.id
-        )
-        if (remainingConversations.length > 0) {
-          navigate(`/chat/${remainingConversations[0].id}`)
-        } else {
-          navigate('/chat')
-        }
+        // Always go to fresh chat screen after deletion
+        // This maintains consistency with the app always starting fresh
+        navigate('/chat')
       }
 
       setDeleteConfirmation(null)
