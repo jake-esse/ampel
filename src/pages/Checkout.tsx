@@ -326,7 +326,7 @@ export default function Checkout() {
       <div className="max-w-2xl mx-auto">
         {/* Plan Summary Card */}
         <div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm mb-6">
-          <h2 className="text-xl font-serif font-semibold text-gray-900 mb-6">
+          <h2 className="text-2xl font-serif font-semibold text-gray-900 mb-6">
             Checkout to become an owner!
           </h2>
           <div className="space-y-5">
