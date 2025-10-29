@@ -21,6 +21,7 @@ import KYCVerification from './pages/KYCVerification'
 import KYCPending from './pages/KYCPending'
 import KYCDeclined from './pages/KYCDeclined'
 import Checkout from './pages/Checkout'
+import CheckoutSuccess from './pages/CheckoutSuccess'
 
 /**
  * Inner app component with network monitoring
@@ -166,6 +167,16 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Checkout />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Checkout success route - After payment completion */}
+        <Route
+          path="/checkout-success"
+          element={
+            <ProtectedRoute>
+              <CheckoutSuccess />
             </ProtectedRoute>
           }
         />

@@ -313,9 +313,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Step 4: Checkout/payment
   // Users must complete payment after KYC approval
   const needsCheckout = kycStatus === 'approved' && !profile.onboarding_completed_at
-  const isOnCheckoutPage = location.pathname === '/checkout'
+  const isOnCheckoutPages = location.pathname === '/checkout' || location.pathname === '/checkout-success'
 
-  if (needsCheckout && !isOnCheckoutPage) {
+  if (needsCheckout && !isOnCheckoutPages) {
     return <Navigate to="/checkout" replace />
   }
 
