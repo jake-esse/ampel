@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useToast } from '@/hooks/useToast'
 import { supabase } from '@/lib/supabase'
 import { saveSubscriptionSelection } from '@/lib/database/subscriptions'
 
@@ -86,7 +85,6 @@ const plans: Plan[] = [
 export default function PlanSelection() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { showToast } = useToast()
   const [selectedTier, setSelectedTier] = useState<SubscriptionTier | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -96,10 +94,6 @@ export default function PlanSelection() {
 
   const handleContinue = async () => {
     if (!selectedTier || !user) {
-      showToast({
-        type: 'error',
-        message: 'Please select a plan to continue'
-      })
       return
     }
 
@@ -123,21 +117,12 @@ export default function PlanSelection() {
         throw new Error('Failed to verify subscription selection')
       }
 
-      // Show success message (using 'info' type since 'success' is not available)
-      showToast({
-        type: 'info',
-        message: `${plans.find(p => p.tier === selectedTier)?.name} plan selected!`
-      })
-
       // Navigate to disclosures page with state to indicate tier was just selected
       // This helps ProtectedRoute know not to redirect while the profile updates
       navigate('/disclosures', { state: { tierJustSelected: true } })
     } catch (error) {
       console.error('Error saving subscription selection:', error)
-      showToast({
-        type: 'error',
-        message: 'Failed to save your selection. Please try again.'
-      })
+      // Silently handle error - user can retry by selecting again
     } finally {
       setLoading(false)
     }
