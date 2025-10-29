@@ -52,9 +52,6 @@ export default function Checkout() {
   // Error state
   const [error, setError] = useState<string | null>(null)
 
-  // Checkout expansion state
-  const [isCheckoutExpanded, setIsCheckoutExpanded] = useState(false)
-
   // Initialize Stripe.js on component mount
   useEffect(() => {
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
@@ -329,19 +326,19 @@ export default function Checkout() {
       <div className="max-w-2xl mx-auto">
         {/* Plan Summary Card */}
         <div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm mb-6">
-          <div className="space-y-3">
+          <div className="space-y-5">
             {/* Selected Plan */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Selected Plan</span>
-              <span className="text-base font-semibold text-gray-900">
+              <span className="text-base text-gray-600">Selected Plan</span>
+              <span className="text-xl font-bold text-gray-900">
                 {planDetails.name}
               </span>
             </div>
 
             {/* Monthly Shares */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Monthly Shares</span>
-              <span className="text-base font-semibold text-gray-900">
+              <span className="text-base text-gray-600">Monthly Shares</span>
+              <span className="text-xl font-bold text-gray-900">
                 {planDetails.shares}
               </span>
             </div>
@@ -350,12 +347,7 @@ export default function Checkout() {
 
         {/* Stripe Embedded Checkout */}
         {stripePromise && clientSecret && (
-          <div
-            className={`relative bg-white border border-[#E5E3DD] rounded-xl overflow-hidden shadow-sm transition-all duration-300 ${
-              isCheckoutExpanded ? '' : 'max-h-[120px] cursor-pointer'
-            }`}
-            onClick={() => !isCheckoutExpanded && setIsCheckoutExpanded(true)}
-          >
+          <div className="bg-white border border-[#E5E3DD] rounded-xl overflow-hidden shadow-sm">
             <EmbeddedCheckoutProvider
               stripe={stripePromise}
               options={{
@@ -365,11 +357,6 @@ export default function Checkout() {
             >
               <EmbeddedCheckout />
             </EmbeddedCheckoutProvider>
-            {!isCheckoutExpanded && (
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/90 pointer-events-none flex items-end justify-center pb-4">
-                <div className="text-sm text-gray-600 font-medium">Tap to enter payment details</div>
-              </div>
-            )}
           </div>
         )}
       </div>
