@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/lib/supabase';
 import { Accordion } from '@/components/ui/Accordion';
 
@@ -63,7 +62,6 @@ Deadline Changes: Investors will be notified of any accelerated offering deadlin
 export function Disclosures() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { showToast } = useToast();
   const [acknowledged, setAcknowledged] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -92,10 +90,7 @@ export function Disclosures() {
       navigate('/chat', { state: { disclosuresAccepted: true } });
     } catch (error) {
       console.error('Error accepting disclosures:', error);
-      showToast({
-        type: 'error',
-        message: 'Failed to save your acknowledgment. Please try again.',
-      });
+      // Silently handle error - user can retry by clicking continue again
     } finally {
       setLoading(false);
     }

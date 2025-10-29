@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { App as CapacitorApp } from '@capacitor/app'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
-import { KYCGuard } from './components/auth/KYCGuard'
 import { ConversationProvider } from './contexts/ConversationContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { ToastContainer } from './components/ui/ToastContainer'
@@ -181,14 +180,12 @@ function AppContent() {
           }
         />
 
-        {/* Protected routes (require auth + disclosures + KYC approval) */}
+        {/* Protected routes (require auth + disclosures + KYC approval + onboarding completion) */}
         <Route
           path="/chat"
           element={
             <ProtectedRoute>
-              <KYCGuard>
-                <Chat />
-              </KYCGuard>
+              <Chat />
             </ProtectedRoute>
           }
         />
@@ -196,9 +193,7 @@ function AppContent() {
           path="/chat/:conversationId"
           element={
             <ProtectedRoute>
-              <KYCGuard>
-                <Chat />
-              </KYCGuard>
+              <Chat />
             </ProtectedRoute>
           }
         />
@@ -206,9 +201,7 @@ function AppContent() {
           path="/apps"
           element={
             <ProtectedRoute>
-              <KYCGuard>
-                <Apps />
-              </KYCGuard>
+              <Apps />
             </ProtectedRoute>
           }
         />
@@ -216,9 +209,7 @@ function AppContent() {
           path="/apps/ampel"
           element={
             <ProtectedRoute>
-              <KYCGuard>
-                <AppsAmpel />
-              </KYCGuard>
+              <AppsAmpel />
             </ProtectedRoute>
           }
         />

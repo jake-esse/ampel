@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Client } from 'persona'
 import { useAuth } from '@/hooks/useAuth'
-import { useToast } from '@/hooks/useToast'
 import { markKYCPending } from '@/lib/database/kyc'
 import { supabase } from '@/lib/supabase'
 
@@ -36,7 +35,6 @@ let hasPersonaInitialized = false
 export default function KYCVerification() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { showToast } = useToast()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -233,12 +231,6 @@ export default function KYCVerification() {
                 }
               }
 
-              // Show success toast
-              showToast({
-                type: 'info',
-                message: 'Verification submitted successfully'
-              })
-
               console.log('🚀 Navigating to /kyc-pending with React Router...')
 
               // Use React Router navigate instead of window.location
@@ -250,10 +242,6 @@ export default function KYCVerification() {
               console.error('❌ Failed to save verification status:', err)
               const errorMessage = err instanceof Error ? err.message : 'Unknown error'
               setError(`Failed to save verification: ${errorMessage}`)
-              showToast({
-                type: 'error',
-                message: 'Failed to save verification. Please try again.'
-              })
             }
           },
 
@@ -264,10 +252,6 @@ export default function KYCVerification() {
               timeoutRef.current = null
             }
             setError('You must complete identity verification to use Ampel.')
-            showToast({
-              type: 'info',
-              message: 'Verification canceled'
-            })
           },
 
           onError: (error) => {
@@ -278,10 +262,6 @@ export default function KYCVerification() {
             }
             setError(`Verification failed: ${error.code || 'Unknown error'}. Please try again or contact support.`)
             setIsLoading(false)
-            showToast({
-              type: 'error',
-              message: 'Verification failed. Please try again.'
-            })
           }
         })
 
@@ -315,7 +295,7 @@ export default function KYCVerification() {
       // DON'T reset module-level flags - they should persist across remounts
       // This prevents React Strict Mode from creating multiple instances
     }
-  }, [user, navigate, showToast])
+  }, [user, navigate])
 
   if (!user) {
     return null
