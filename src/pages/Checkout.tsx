@@ -52,6 +52,9 @@ export default function Checkout() {
   // Error state
   const [error, setError] = useState<string | null>(null)
 
+  // Checkout expansion state
+  const [isCheckoutExpanded, setIsCheckoutExpanded] = useState(false)
+
   // Initialize Stripe.js on component mount
   useEffect(() => {
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
@@ -347,7 +350,12 @@ export default function Checkout() {
 
         {/* Stripe Embedded Checkout */}
         {stripePromise && clientSecret && (
-          <div className="bg-white border border-[#E5E3DD] rounded-xl overflow-hidden shadow-sm">
+          <div
+            className={`relative bg-white border border-[#E5E3DD] rounded-xl overflow-hidden shadow-sm transition-all duration-300 ${
+              isCheckoutExpanded ? '' : 'max-h-[120px] cursor-pointer'
+            }`}
+            onClick={() => !isCheckoutExpanded && setIsCheckoutExpanded(true)}
+          >
             <EmbeddedCheckoutProvider
               stripe={stripePromise}
               options={{
@@ -357,6 +365,11 @@ export default function Checkout() {
             >
               <EmbeddedCheckout />
             </EmbeddedCheckoutProvider>
+            {!isCheckoutExpanded && (
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/90 pointer-events-none flex items-end justify-center pb-4">
+                <div className="text-sm text-gray-600 font-medium">Tap to enter payment details</div>
+              </div>
+            )}
           </div>
         )}
       </div>
