@@ -152,29 +152,38 @@ export default function Checkout() {
         console.log(`Creating checkout session for tier: ${planDetails.tier}, priceId: ${priceId}`)
 
         // Call edge function to create checkout session
+        // Using direct fetch instead of supabase.functions.invoke() for better compatibility with Capacitor
         // Edge function validates KYC status and tier selection
-        // Supabase client automatically includes JWT from active session
-        const { data, error: functionError } = await supabase.functions.invoke(
-          'create-checkout-session',
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
           {
-            body: { priceId }
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${sessionData.session.access_token}`,
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ priceId })
           }
         )
 
-        if (functionError) {
-          console.error('Edge function error:', functionError)
-          console.error('Error name:', functionError.name)
-          console.error('Error message:', functionError.message)
-          console.error('Error context:', functionError.context)
+        console.log('Response status:', response.status)
+        console.log('Response OK:', response.ok)
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+          console.error('Edge function error:', errorData)
+
+          const errorMessage = errorData.message || errorData.error || 'Unknown error'
 
           // Handle specific error cases
-          if (functionError.message?.includes('KYC')) {
+          if (errorMessage.includes('KYC')) {
             // KYC not approved - redirect to pending page
             navigate('/kyc-pending', { replace: true })
             return
           }
 
-          if (functionError.message?.includes('tier')) {
+          if (errorMessage.includes('tier')) {
             // No tier selected - redirect to plan selection
             navigate('/onboarding/plans', { replace: true })
             return
@@ -184,6 +193,9 @@ export default function Checkout() {
           setError('Failed to create checkout session. Please try again.')
           return
         }
+
+        const data = await response.json()
+        console.log('Response data:', data)
 
         if (!data?.clientSecret) {
           console.error('No client secret in response:', data)
