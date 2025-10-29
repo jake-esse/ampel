@@ -317,7 +317,7 @@ export default function Checkout() {
   // Render embedded checkout
   return (
     <div
-      className="min-h-screen bg-[#FDFCFA] px-4 py-8"
+      className="h-screen bg-[#FDFCFA] overflow-y-auto px-4 py-8"
       style={{
         paddingTop: 'max(2rem, env(safe-area-inset-top))',
         paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
