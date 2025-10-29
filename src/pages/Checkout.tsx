@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { loadStripe, Stripe } from '@stripe/stripe-js'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { useAuth } from '@/hooks/useAuth'
@@ -324,19 +324,6 @@ export default function Checkout() {
       }}
     >
       <div className="max-w-2xl mx-auto">
-        {/* Success Icon and Header */}
-        <div className="text-center mb-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
-            <Check className="w-10 h-10 text-green-600" strokeWidth={3} />
-          </div>
-          <h1 className="text-2xl font-serif font-semibold text-gray-900 mb-2">
-            Identity Verified!
-          </h1>
-          <p className="text-base text-gray-600">
-            Complete your subscription to get started
-          </p>
-        </div>
-
         {/* Plan Summary Card */}
         <div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
