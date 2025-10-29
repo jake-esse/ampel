@@ -326,32 +326,20 @@ export default function Checkout() {
       <div className="max-w-2xl mx-auto">
         {/* Plan Summary Card */}
         <div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Your Selected Plan
-          </h2>
-
           <div className="space-y-3">
-            {/* Plan Name */}
+            {/* Selected Plan */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Plan</span>
+              <span className="text-sm text-gray-600">Selected Plan</span>
               <span className="text-base font-semibold text-gray-900">
                 {planDetails.name}
               </span>
             </div>
 
-            {/* Price */}
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Monthly Price</span>
-              <span className="text-base font-semibold text-gray-900">
-                ${planDetails.price}/month
-              </span>
-            </div>
-
-            {/* Shares */}
+            {/* Monthly Shares */}
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Monthly Shares</span>
               <span className="text-base font-semibold text-gray-900">
-                {planDetails.shares} shares
+                {planDetails.shares}
               </span>
             </div>
           </div>
