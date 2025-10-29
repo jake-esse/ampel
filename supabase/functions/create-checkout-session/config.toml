@@ -1,0 +1,50 @@
+# ============================================================================
+# Create Checkout Session Edge Function Configuration
+# ============================================================================
+#
+# This configuration file defines settings for the create-checkout-session
+# Edge Function that handles Stripe checkout session creation for authenticated
+# users.
+#
+# Documentation: https://supabase.com/docs/guides/functions
+
+[create-checkout-session]
+# ENABLE JWT verification - this function requires authentication
+# Unlike webhook endpoints, this function is called by authenticated users
+# from the frontend, so we need to verify their Supabase JWT tokens
+verify_jwt = true
+
+# Import map configuration (optional)
+# If you need to use a custom import map, uncomment and specify the path
+# import_map = "./import_map.json"
+
+# ============================================================================
+# Environment Variables Required:
+# ============================================================================
+# Set these via: supabase secrets set KEY=value
+#
+# - STRIPE_SECRET_KEY: Your Stripe secret key for creating checkout sessions
+#
+# Auto-provided by Supabase:
+# - SUPABASE_URL
+# - SUPABASE_SERVICE_ROLE_KEY
+# ============================================================================
+
+# ============================================================================
+# Deployment:
+# ============================================================================
+# Deploy with: supabase functions deploy create-checkout-session
+#
+# Note: Do NOT use the --no-verify-jwt flag. JWT verification is required
+# for this endpoint to ensure only authenticated users can create sessions.
+# ============================================================================
+
+# ============================================================================
+# Security Notes:
+# ============================================================================
+# - JWT verification is MANDATORY for this function
+# - Function validates KYC status before creating sessions
+# - Uses service role key to bypass RLS for database operations
+# - Only accepts one of four predefined Stripe price IDs
+# - Customer metadata includes user_id for webhook correlation
+# ============================================================================

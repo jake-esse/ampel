@@ -1,0 +1,61 @@
+# ============================================================================
+# Stripe Webhook Handler Configuration
+# ============================================================================
+#
+# This configuration file defines settings for the stripe-webhook Edge Function
+# that processes Stripe payment events and completes user onboarding.
+#
+# Documentation: https://supabase.com/docs/guides/functions
+# Stripe Webhooks: https://stripe.com/docs/webhooks
+
+[stripe-webhook]
+# DISABLE JWT verification - webhooks come from Stripe servers, not users
+# Authentication is handled via webhook signature verification instead
+verify_jwt = false
+
+# Import map configuration (optional)
+# If you need to use a custom import map, uncomment and specify the path
+# import_map = "./import_map.json"
+
+# ============================================================================
+# Environment Variables Required:
+# ============================================================================
+# Set these via: supabase secrets set KEY=value
+#
+# - STRIPE_SECRET_KEY: Your Stripe secret key for API calls
+# - STRIPE_WEBHOOK_SECRET: Webhook signing secret from Stripe Dashboard
+#   Format: whsec_...
+#   Get from: Stripe Dashboard > Developers > Webhooks > [Your Endpoint]
+#
+# Auto-provided by Supabase:
+# - SUPABASE_URL
+# - SUPABASE_SERVICE_ROLE_KEY
+# ============================================================================
+
+# ============================================================================
+# Deployment:
+# ============================================================================
+# Deploy with: supabase functions deploy stripe-webhook --no-verify-jwt
+#
+# Note: MUST use --no-verify-jwt flag because Stripe doesn't send JWTs.
+# Authentication is via HMAC-SHA256 signature verification instead.
+# ============================================================================
+
+# ============================================================================
+# Security Notes:
+# ============================================================================
+# - Webhook signature verification is MANDATORY (prevents fake events)
+# - Uses service role key to bypass RLS for database operations
+# - Validates timestamp to prevent replay attacks (5 minute window)
+# - Always returns 200 (except signature failures) to prevent endless retries
+# - Idempotency protection via onboarding_completed_at check
+# - Only sets onboarding_completed_at after verified payment success
+# ============================================================================
+
+# ============================================================================
+# Events Handled:
+# ============================================================================
+# - checkout.session.completed: Payment succeeded, grant shares, complete onboarding
+# - customer.subscription.updated: Subscription status changed
+# - customer.subscription.deleted: Subscription cancelled or expired
+# ============================================================================
