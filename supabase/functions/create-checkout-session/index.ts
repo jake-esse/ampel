@@ -442,6 +442,7 @@ Deno.serve(async (req) => {
       mode: 'subscription',
       ui_mode: 'embedded', // CRITICAL: Enables embedded checkout
       customer: customerId,
+      payment_method_types: ['card'], // Only allow credit/debit cards
       line_items: [
         {
           price: requestBody.priceId,
