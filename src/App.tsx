@@ -14,10 +14,13 @@ import Login from './pages/Login'
 import Chat from './pages/Chat'
 import Apps from './pages/Apps'
 import AppsAmpel from './pages/AppsAmpel'
+import EquityIntro from './pages/EquityIntro'
+import PlanSelection from './pages/PlanSelection'
 import { Disclosures } from './pages/Disclosures'
 import KYCVerification from './pages/KYCVerification'
 import KYCPending from './pages/KYCPending'
 import KYCDeclined from './pages/KYCDeclined'
+import Checkout from './pages/Checkout'
 
 /**
  * Inner app component with network monitoring
@@ -105,6 +108,24 @@ function AppContent() {
         {/* Public routes */}
         <Route path="/" element={<Login />} />
 
+        {/* Onboarding routes - New user flow */}
+        <Route
+          path="/onboarding/equity"
+          element={
+            <ProtectedRoute>
+              <EquityIntro />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/onboarding/plans"
+          element={
+            <ProtectedRoute>
+              <PlanSelection />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Auth-required routes (no KYC required) */}
         <Route
           path="/disclosures"
@@ -135,6 +156,16 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <KYCDeclined />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Checkout route - After KYC approval */}
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
             </ProtectedRoute>
           }
         />

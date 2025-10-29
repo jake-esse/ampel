@@ -14,6 +14,16 @@ export type Profile = {
   persona_account_id: string | null
   persona_reference_id: string | null
   updated_at: string
+  // Subscription and equity fields
+  selected_subscription_tier: 'starter' | 'plus' | 'pro' | 'max' | null
+  subscription_status: 'inactive' | 'active' | 'cancelled' | 'past_due'
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  shares_balance: number
+  referral_code: string
+  referred_by: string | null
+  referral_code_used: string | null
+  onboarding_completed_at: string | null
 }
 
 export type Conversation = {
@@ -36,5 +46,15 @@ export type Message = {
 export type DeveloperWaitlist = {
   id: string
   email: string
+  created_at: string
+}
+
+export type EquityTransaction = {
+  id: string
+  user_id: string
+  transaction_type: 'signup' | 'subscription' | 'referral_given' | 'referral_received'
+  shares_amount: number
+  description: string | null
+  metadata: Record<string, any> | null
   created_at: string
 }

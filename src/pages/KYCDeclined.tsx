@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useKYCStatus } from '@/hooks/useKYCStatus'
+import { useKYCStatusSimple } from '@/hooks/useKYCStatusSimple'
 
 /**
  * KYC Declined Page
@@ -19,7 +19,7 @@ import { useKYCStatus } from '@/hooks/useKYCStatus'
  * - Document not accepted (wrong country/type)
  */
 export default function KYCDeclined() {
-  const { kycStatus } = useKYCStatus()
+  const { kycStatus } = useKYCStatusSimple()
   const navigate = useNavigate()
 
   // Determine the message based on status

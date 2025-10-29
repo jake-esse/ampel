@@ -14,15 +14,19 @@ export default function Login() {
   const [mode, setMode] = useState<AuthMode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingType, setLoadingType] = useState<'email' | 'apple' | 'google' | null>(null)
   const [emailFocused, setEmailFocused] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
-  // Redirect to chat if already authenticated
+  // Redirect to appropriate page if already authenticated
+  // Don't redirect to /chat directly - let ProtectedRoute handle onboarding flow
   useEffect(() => {
     if (user) {
-      navigate('/chat', { replace: true })
+      // Navigate to /onboarding/equity and let ProtectedRoute determine the correct destination
+      // This prevents redirect loops and ensures proper onboarding flow
+      navigate('/onboarding/equity', { replace: true })
     }
   }, [user, navigate])
 
@@ -51,6 +55,13 @@ export default function Login() {
     return password.length >= 6
   }
 
+  const validateReferralCode = (code: string): boolean => {
+    if (!code || code.trim().length === 0) return true // Optional field
+    // Alphanumeric, 6-8 characters
+    const referralRegex = /^[A-Z0-9]{6,8}$/i
+    return referralRegex.test(code)
+  }
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -71,12 +82,25 @@ export default function Login() {
       return
     }
 
+    // Validate referral code if provided (only for signup)
+    if (mode === 'signup' && referralCode && !validateReferralCode(referralCode)) {
+      showToast({
+        type: 'error',
+        message: 'Referral code must be 6-8 alphanumeric characters'
+      })
+      return
+    }
+
     setLoading(true)
     setLoadingType('email')
 
     try {
       if (mode === 'signup') {
-        await signUp({ email, password })
+        await signUp({
+          email,
+          password,
+          referralCode: referralCode.trim() || undefined
+        })
         showToast({
           type: 'info',
           message: 'Check your email to confirm your account'
@@ -287,6 +311,20 @@ export default function Login() {
                 placeholder="Password"
                 required
               />
+
+              {/* Referral Code - Only show for signup */}
+              {mode === 'signup' && (
+                <input
+                  id="referralCode"
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  disabled={loading}
+                  className="w-full px-4 py-3 bg-[#F2F1ED] border-0 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-50 text-base"
+                  placeholder="Referral code (optional)"
+                  maxLength={8}
+                />
+              )}
 
               {/* Submit Button */}
               <button
