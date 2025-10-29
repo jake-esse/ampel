@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useKYCStatus } from '@/hooks/useKYCStatus'
+import { useKYCStatusSimple } from '@/hooks/useKYCStatusSimple'
 
 /**
  * KYC Pending Page
@@ -8,33 +8,40 @@ import { useKYCStatus } from '@/hooks/useKYCStatus'
  * This page is shown after the user completes the Persona verification flow
  * and is waiting for Persona to review and approve/decline their verification.
  *
- * Real-time updates:
- * - useKYCStatus subscribes to database changes
- * - When webhook updates status to 'approved' → auto-redirect to /chat
- * - When webhook updates status to 'declined' → auto-redirect to /kyc-declined
+ * Uses SIMPLE POLLING for reliability:
+ * - Polls database every 2 seconds
+ * - When status changes to 'approved' → redirect to /checkout
+ * - When status changes to 'declined' → redirect to /kyc-declined
  *
  * Typically this screen is shown for just a few seconds to a few minutes,
  * depending on Persona's processing time.
  */
 export default function KYCPending() {
   const navigate = useNavigate()
-  const { kycStatus } = useKYCStatus()
+  const { kycStatus, loading } = useKYCStatusSimple()
 
-  console.log('⏳ KYCPending: Rendered with status:', kycStatus?.status)
+  console.log('⏳ KYCPending: Rendered with status:', kycStatus?.status, 'loading:', loading)
 
   // Listen for status changes and redirect accordingly
   useEffect(() => {
     console.log('⏳ KYCPending: useEffect triggered, status:', kycStatus?.status)
+
+    // Don't redirect while loading
+    if (loading) {
+      console.log('⏳ KYCPending: Still loading...')
+      return
+    }
 
     if (!kycStatus) {
       console.log('⏳ KYCPending: No status yet, waiting...')
       return
     }
 
-    // When approved, redirect to chat
+    // When approved, redirect to checkout (not chat - they need to complete onboarding)
+    // Pass state flag to force profile refetch in ProtectedRoute
     if (kycStatus.status === 'approved') {
-      console.log('⏳ KYCPending: Status is approved, redirecting to /chat')
-      navigate('/chat', { replace: true })
+      console.log('⏳ KYCPending: Status is approved, redirecting to /checkout')
+      navigate('/checkout', { replace: true, state: { kycJustApproved: true } })
     }
     // When declined or needs review, redirect to declined page
     else if (kycStatus.status === 'declined' || kycStatus.status === 'needs_review') {
@@ -43,7 +50,7 @@ export default function KYCPending() {
     } else {
       console.log('⏳ KYCPending: Status is', kycStatus.status, '- staying on pending page')
     }
-  }, [kycStatus, navigate])
+  }, [kycStatus?.status, loading, navigate])
 
   return (
     <div className="min-h-screen bg-[#FDFCFA] flex items-center justify-center p-6">
@@ -100,6 +107,14 @@ export default function KYCPending() {
             <div className="w-2 h-2 bg-[#30302E] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
             <div className="w-2 h-2 bg-[#30302E] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
           </div>
+
+          {/* Manual refresh button (fallback) */}
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-6 text-sm text-gray-600 hover:text-gray-900 underline transition-colors"
+          >
+            Taking longer than expected? Click to refresh
+          </button>
         </div>
       </div>
     </div>

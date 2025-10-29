@@ -59,62 +59,133 @@ export async function getKYCStatus(userId: string): Promise<KYCStatus | null> {
  * The status will be updated to 'approved', 'declined', or 'needs_review' later
  * by the webhook when Persona finishes processing.
  *
+ * Includes retry logic with exponential backoff to handle:
+ * - Transient network errors
+ * - Auth token expiration
+ * - Temporary database unavailability
+ *
  * Note: RLS policy "Users can update KYC to pending" allows authenticated users
  * to update their own KYC status to 'pending' and set inquiry/reference IDs.
  *
  * @param userId - The authenticated user's ID
  * @param inquiryId - The Persona inquiry ID returned from the embedded flow
- * @throws Error if profile doesn't exist or update fails
+ * @throws Error if profile doesn't exist or update fails after retries
  */
 export async function markKYCPending(userId: string, inquiryId: string): Promise<void> {
-  // First, verify the user's profile exists
-  // This catches stale session issues where the user was deleted
-  const { data: existingProfile, error: checkError } = await supabase
-    .from('profiles')
-    .select('id, kyc_status')
-    .eq('id', userId)
-    .single()
+  const maxRetries = 3
+  const baseDelay = 1000 // Start with 1 second
 
-  if (checkError || !existingProfile) {
-    console.error('❌ Profile not found for user:', userId)
-    console.error('Check error:', checkError)
-    throw new Error(
-      'User profile not found. Your session may be outdated. Please log out and log in again.'
-    )
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      // Refresh auth session before critical operation
+      // This prevents "TypeError: Load failed" from expired tokens
+      if (attempt > 0) {
+        console.log(`🔄 Retry attempt ${attempt}/${maxRetries}: Refreshing auth session...`)
+        const { error: refreshError } = await supabase.auth.refreshSession()
+        if (refreshError) {
+          console.warn('⚠️ Failed to refresh session:', refreshError.message)
+          // Continue anyway - the session might still be valid
+        }
+      }
+
+      // Verify the user's profile exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('id, kyc_status')
+        .eq('id', userId)
+        .single()
+
+      // Distinguish between network errors and actual missing profile
+      if (checkError) {
+        const errorMessage = checkError.message || ''
+        const isNetworkError =
+          errorMessage.includes('Load failed') ||
+          errorMessage.includes('Failed to fetch') ||
+          errorMessage.includes('NetworkError') ||
+          checkError.code === ''
+
+        if (isNetworkError && attempt < maxRetries) {
+          // Network error - retry with exponential backoff
+          const delay = baseDelay * Math.pow(2, attempt)
+          console.warn(`⚠️ Network error on attempt ${attempt + 1}, retrying in ${delay}ms...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+          continue // Try again
+        }
+
+        // Either not a network error, or we've exhausted retries
+        console.error('❌ Profile lookup failed:', checkError)
+        throw new Error(
+          isNetworkError
+            ? 'Network connection issue. Please check your connection and try again.'
+            : 'User profile not found. Your session may be outdated. Please log out and log in again.'
+        )
+      }
+
+      if (!existingProfile) {
+        console.error('❌ Profile not found for user:', userId)
+        throw new Error('User profile not found. Please log out and log in again.')
+      }
+
+      console.log('Profile found, current KYC status:', existingProfile.kyc_status)
+
+      // Update the profile with KYC pending status
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          kyc_status: 'pending',
+          persona_inquiry_id: inquiryId,
+          persona_reference_id: userId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select()
+
+      if (error) {
+        const errorMessage = error.message || ''
+        const isNetworkError =
+          errorMessage.includes('Load failed') ||
+          errorMessage.includes('Failed to fetch') ||
+          errorMessage.includes('NetworkError')
+
+        if (isNetworkError && attempt < maxRetries) {
+          // Network error during update - retry
+          const delay = baseDelay * Math.pow(2, attempt)
+          console.warn(`⚠️ Network error during update on attempt ${attempt + 1}, retrying in ${delay}ms...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+          continue // Try again
+        }
+
+        console.error('❌ Error updating KYC status:', error)
+        throw new Error(
+          isNetworkError
+            ? 'Network connection issue. Please check your connection and try again.'
+            : `Failed to update KYC status: ${error.message}`
+        )
+      }
+
+      // Verify rows were actually updated
+      if (!data || data.length === 0) {
+        console.error('❌ No rows updated for user:', userId)
+        throw new Error('Failed to update profile. This may be due to permission issues. Please contact support.')
+      }
+
+      console.log('✅ KYC status updated to pending:', {
+        userId,
+        inquiryId,
+        rowsUpdated: data.length,
+        newStatus: data[0].kyc_status,
+        attemptNumber: attempt + 1
+      })
+
+      // Success! Exit the retry loop
+      return
+
+    } catch (error) {
+      // If this was our last attempt, re-throw the error
+      if (attempt === maxRetries) {
+        throw error
+      }
+      // Otherwise, the loop will continue to retry
+    }
   }
-
-  console.log('Profile found, current KYC status:', existingProfile.kyc_status)
-
-  // Update the profile with KYC pending status
-  const { data, error } = await supabase
-    .from('profiles')
-    .update({
-      kyc_status: 'pending',
-      persona_inquiry_id: inquiryId,
-      persona_reference_id: userId,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', userId)
-    .select()
-
-  if (error) {
-    console.error('❌ Error updating KYC status:', error)
-    throw new Error(`Failed to update KYC status: ${error.message}`)
-  }
-
-  // Verify rows were actually updated
-  // Without .select(), Supabase returns { error: null } even if no rows matched
-  if (!data || data.length === 0) {
-    console.error('❌ No rows updated for user:', userId)
-    throw new Error(
-      'Failed to update profile. This may be due to permission issues. Please contact support.'
-    )
-  }
-
-  console.log('✅ KYC status updated to pending:', {
-    userId,
-    inquiryId,
-    rowsUpdated: data.length,
-    newStatus: data[0].kyc_status
-  })
 }

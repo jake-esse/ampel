@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { useKYCStatus } from '@/hooks/useKYCStatus'
+import { useKYCStatusSimple } from '@/hooks/useKYCStatusSimple'
 
 interface KYCGuardProps {
   children: React.ReactNode
@@ -43,7 +43,7 @@ interface KYCGuardProps {
  */
 export function KYCGuard({ children }: KYCGuardProps) {
   const { user, loading: authLoading } = useAuth()
-  const { kycStatus, loading: kycLoading } = useKYCStatus()
+  const { kycStatus, loading: kycLoading } = useKYCStatusSimple()
   const navigate = useNavigate()
 
   // Combined loading state: wait for both auth AND KYC status to load

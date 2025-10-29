@@ -82,7 +82,7 @@ export default function KYCVerification() {
       try {
         const { data: profile, error: checkError } = await supabase
           .from('profiles')
-          .select('kyc_status')
+          .select('kyc_status, onboarding_completed_at')
           .eq('id', user.id)
           .single()
 
@@ -97,8 +97,10 @@ export default function KYCVerification() {
         console.log('Current KYC status:', status)
 
         if (status === 'approved') {
-          console.log('✅ User already approved, redirecting to /chat')
-          navigate('/chat', { replace: true })
+          // Approved users who haven't completed onboarding should go to checkout, not chat
+          const destination = profile?.onboarding_completed_at ? '/chat' : '/checkout'
+          console.log(`✅ User already approved, redirecting to ${destination}`)
+          navigate(destination, { replace: true })
           return false // Don't initialize Persona
         } else if (status === 'pending') {
           console.log('⏳ User status is pending, redirecting to /kyc-pending')
