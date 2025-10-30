@@ -1,13 +1,107 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, MessageCircle } from 'lucide-react'
 import { impact } from '@/hooks/useHaptics'
+import { Accordion } from '@/components/ui/Accordion'
+import { DiscussionBoard } from '@/components/ampel/DiscussionBoard'
 
 /**
  * Ampel app detail page
  * Shows information about the Ampel app and its equity-sharing model
+ * Includes ownership incentives, disclosures, and discussion board
  */
 export default function AppsAmpel() {
   const navigate = useNavigate()
+  const [isDiscussionOpen, setIsDiscussionOpen] = useState(false)
+
+  // Ownership incentive cards data
+  const ownershipIncentives = [
+    {
+      title: 'Sign Up',
+      shares: 100,
+      description: 'Welcome bonus for joining Ampel',
+    },
+    {
+      title: 'Monthly Subscription',
+      shares: '5-40',
+      description: 'Earn shares every month based on your plan',
+    },
+    {
+      title: 'Refer a Friend',
+      shares: 50,
+      description: 'Get shares for each person you invite',
+    },
+    {
+      title: 'Get Referred',
+      shares: 25,
+      description: 'Bonus shares for using a referral code',
+    },
+  ]
+
+  // Disclosure sections data
+  const disclosureSections = [
+    {
+      title: 'Offering Process',
+      content: `This offering is conducted pursuant to Section 4(a)(6) of the Securities Act of 1933, as amended (Regulation Crowdfunding).
+
+Loupt Portal LLC, a funding portal registered with the SEC and FINRA, serves as the intermediary for this offering.`,
+    },
+    {
+      title: 'Company Information',
+      content: `Entity: [Insert legal entity name]
+Address: [Insert physical address]
+Website: ampel.ai
+Principal: James Esse, Founder & Chief Executive Officer
+Business Description: Ampel operates a consumer-facing artificial intelligence platform providing user ownership opportunities. The Company intends to enable third-party developer integrations and facilitate ownership offerings through its platform. Planned revenue streams include user subscriptions, transaction fees from third-party developers, and additional products and services for both users and developers.
+Current Headcount: 1`,
+    },
+    {
+      title: 'Financial Terms',
+      content: `Securities are offered at par value, established at offering commencement.
+Offering Amount: 5,000,000 shares
+Minimum Target: $0
+Offering Deadline: March 31, 2026
+No additional shares will be issued under the described incentive program.
+Offering Purpose: Community building and early user engagement`,
+    },
+    {
+      title: 'Risk Factors',
+      content: `The Company is pre-revenue with no operating history, liquidity, or material capital resources. This offering aims to fund initial operations.
+
+Material risks include: user acquisition and retention failure, developer adoption failure, inability to achieve positive cash flow, future fundraising challenges, regulatory uncertainty, cybersecurity vulnerabilities, and key person dependency.`,
+    },
+    {
+      title: 'Securities Description',
+      content: `Offered Securities: Non-voting common stock
+Existing Securities: Voting common stock (held solely by Founder)
+The non-voting common stock may be amended to include voting rights; no current plans exist to do so.
+Valuation: Par value, determined at offering commencement
+Future Dilution: Both share classes are subject to dilution through a future equity incentive plan and potential capital raises.
+Transfer Restrictions: Securities are subject to a one-year transfer restriction under Regulation Crowdfunding. No liquid market is anticipated post-restriction period.`,
+    },
+    {
+      title: 'Intermediary Details',
+      content: `Funding Portal: Loupt Portal LLC
+SEC File Number: [Insert number]
+CRD Number: [Insert number]`,
+    },
+    {
+      title: 'Investor Rights',
+      content: `Cancellation: Investment commitments may be canceled until 48 hours prior to offering completion.
+Material Changes: Investors will receive notice of material changes and must reconfirm their commitments.
+Progress Updates: Notifications will be provided at 50% and 100% completion milestones.
+Deadline Changes: Investors will be notified of any accelerated offering deadlines.`,
+    },
+  ]
+
+  const handleOpenDiscussion = () => {
+    impact('light')
+    setIsDiscussionOpen(true)
+  }
+
+  const handleCloseDiscussion = () => {
+    setIsDiscussionOpen(false)
+  }
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -35,8 +129,14 @@ export default function AppsAmpel() {
           {/* Center: Empty */}
           <div />
 
-          {/* Right: Empty space for symmetry */}
-          <div className="min-w-[44px]" />
+          {/* Right: Discussion board icon */}
+          <button
+            onClick={handleOpenDiscussion}
+            className="p-2.5 hover:bg-gray-100 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Discussion Board"
+          >
+            <MessageCircle className="w-6 h-6 text-gray-900" />
+          </button>
         </div>
       </header>
 
@@ -63,25 +163,64 @@ export default function AppsAmpel() {
             </div>
           </div>
 
-          {/* Description Section */}
-          <div className="space-y-4">
+          {/* Description Section - Condensed */}
+          <div>
             <p className="text-base text-gray-700 leading-relaxed">
-              Ampel is a new kind of company, one owned by the users. We've set
-              aside 50% of the company's equity at launch to share with users in
-              return for helping to grow our company by using our product.
+              Ampel is a user-owned AI company. We've reserved 50% of our
+              equity to share with users who help us grow by using our product,
+              building a future where users meaningfully engage with and own the
+              companies they help create value for.
             </p>
+          </div>
 
-            <p className="text-base text-gray-700 leading-relaxed">
-              We're building a future where everyone engages more meaningfully
-              with the companies we help create value for, where the value
-              created by AI is shared with those who create it, and where the
-              founders of tomorrow determined to build the next big AI company
-              can acquire and engage users without spending so much on paid
-              marketing by offering equity to users as well.
-            </p>
+          {/* Ownership Incentives Section */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Ownership Incentives
+            </h2>
+            <div className="space-y-3">
+              {ownershipIncentives.map((card) => (
+                <div
+                  key={card.title}
+                  className="bg-white border border-[#E5E3DD] rounded-xl p-4 shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Left: Title and description */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {card.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {card.description}
+                      </p>
+                    </div>
+
+                    {/* Right: Share numbers */}
+                    <div className="flex-shrink-0 text-right">
+                      <div className="text-3xl font-bold text-gray-900 leading-tight">
+                        {card.shares}
+                      </div>
+                      <div className="text-xs text-gray-600 -mt-1">shares</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Disclosures Section */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900">Disclosures</h2>
+            <Accordion items={disclosureSections} />
           </div>
         </div>
       </main>
+
+      {/* Discussion Board Modal */}
+      <DiscussionBoard
+        isOpen={isDiscussionOpen}
+        onClose={handleCloseDiscussion}
+      />
     </div>
   )
 }

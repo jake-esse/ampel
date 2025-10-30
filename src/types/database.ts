@@ -58,3 +58,14 @@ export type EquityTransaction = {
   metadata: Record<string, any> | null
   created_at: string
 }
+
+export type AmpelQuestion = {
+  id: string
+  user_id: string
+  question_text: string
+  response_text: string | null
+  responded_at: string | null
+  responded_by: string | null
+  created_at: string
+  updated_at: string
+}
