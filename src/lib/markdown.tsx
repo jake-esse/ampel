@@ -4,6 +4,7 @@
  */
 
 import type { Components } from 'react-markdown'
+import { ExternalLink } from 'lucide-react'
 
 /**
  * Custom components for markdown rendering
@@ -11,14 +12,44 @@ import type { Components } from 'react-markdown'
  */
 export const markdownComponents: Components = {
   // Links should open in new tab with security attributes
-  a: ({ node, ...props }) => (
-    <a
-      {...props}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-400 hover:text-blue-300 underline break-words"
-    />
-  ),
+  // Citation links (short domain names) are styled as chips
+  // Regular links have underline with external icon
+  a: ({ node, ...props }) => {
+    // Check if this looks like a citation link (short domain name)
+    const linkText = String(props.children || '')
+    const isCitation =
+      linkText.length > 0 &&
+      linkText.length < 30 &&
+      !linkText.includes(' ') &&
+      !linkText.startsWith('http')
+
+    if (isCitation) {
+      // Citation link - styled as compact chip
+      return (
+        <a
+          {...props}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 px-2 py-0.5 mx-0.5 bg-[#F2F1ED] hover:bg-[#E8E6E1] border border-[#E5E3DD] rounded-full transition-all duration-150 active:scale-95 text-xs font-semibold text-gray-700 no-underline whitespace-nowrap align-middle"
+        >
+          {props.children}
+        </a>
+      )
+    }
+
+    // Regular markdown link - underlined with icon
+    return (
+      <a
+        {...props}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-baseline gap-1 text-primary-600 hover:text-primary-700 underline underline-offset-2 decoration-1 hover:decoration-2 transition-all duration-150 break-words font-medium"
+      >
+        {props.children}
+        <ExternalLink className="inline-block w-3.5 h-3.5 flex-shrink-0 mb-0.5" />
+      </a>
+    )
+  },
 
   // Pre blocks - filter out indented code blocks, only allow fenced blocks
   pre: ({ node, children, ...props }) => {

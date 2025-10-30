@@ -15,6 +15,7 @@ interface StreamChatOptions {
 export interface StreamChatResult {
   textStream: AsyncGenerator<string, void, unknown>
   tokenUsage: Promise<number | null>
+  citations: Promise<string[]>
 }
 
 /**
@@ -26,10 +27,15 @@ export function streamChatResponse(
 ): StreamChatResult {
   const { messages, reasoning, webSearch } = options
 
-  // Store token usage from the stream
+  // Store token usage and citations from the stream
   let resolveTokens: (tokens: number | null) => void
   const tokenUsagePromise = new Promise<number | null>((resolve) => {
     resolveTokens = resolve
+  })
+
+  let resolveCitations: (citations: string[]) => void
+  const citationsPromise = new Promise<string[]>((resolve) => {
+    resolveCitations = resolve
   })
 
   // Create the async generator for streaming text
@@ -124,15 +130,51 @@ export function streamChatResponse(
               yield textContent
             }
 
-            // Extract token count from marker
+            // Extract markers content (everything after __TOKENS__:)
             const markerStart = tokenMarkerIndex + '\n\n__TOKENS__:'.length
-            const tokenStr = buffer.substring(markerStart)
-            const tokenCount = parseInt(tokenStr, 10)
+            const markersContent = buffer.substring(markerStart)
 
-            if (!isNaN(tokenCount)) {
-              resolveTokens(tokenCount)
+            // Check if citations marker exists
+            const citationsMarkerIndex = markersContent.indexOf('__CITATIONS__:')
+
+            if (citationsMarkerIndex !== -1) {
+              // Extract token count (before citations marker)
+              const tokenStr = markersContent.substring(0, citationsMarkerIndex)
+              const tokenCount = parseInt(tokenStr, 10)
+
+              if (!isNaN(tokenCount)) {
+                resolveTokens(tokenCount)
+              } else {
+                resolveTokens(null)
+              }
+
+              // Extract and parse citations JSON
+              const citationsStart = citationsMarkerIndex + '__CITATIONS__:'.length
+              const citationsJson = markersContent.substring(citationsStart)
+
+              try {
+                const citations = JSON.parse(citationsJson)
+                if (Array.isArray(citations)) {
+                  resolveCitations(citations)
+                } else {
+                  resolveCitations([])
+                }
+              } catch (error) {
+                console.error('Failed to parse citations:', error)
+                resolveCitations([])
+              }
             } else {
-              resolveTokens(null)
+              // No citations marker, just token count
+              const tokenStr = markersContent
+              const tokenCount = parseInt(tokenStr, 10)
+
+              if (!isNaN(tokenCount)) {
+                resolveTokens(tokenCount)
+              } else {
+                resolveTokens(null)
+              }
+
+              resolveCitations([])
             }
 
             buffer = ''
@@ -153,16 +195,20 @@ export function streamChatResponse(
           yield buffer
         }
 
-        // If we never found a token marker, resolve with null
+        // If we never found a token marker, resolve with null/empty
         if (resolveTokens) {
           resolveTokens(null)
+        }
+        if (resolveCitations) {
+          resolveCitations([])
         }
       } finally {
         reader.releaseLock()
       }
     } catch (error) {
-      // Resolve tokens with null on error
+      // Resolve tokens and citations with null/empty on error
       resolveTokens(null)
+      resolveCitations([])
 
       // Re-throw with user-friendly message
       if (error instanceof Error) {
@@ -176,6 +222,7 @@ export function streamChatResponse(
   return {
     textStream: generateStream(),
     tokenUsage: tokenUsagePromise,
+    citations: citationsPromise,
   }
 }
 
