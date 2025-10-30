@@ -4,7 +4,7 @@ export type Profile = {
   username: string | null
   display_name: string | null
   avatar_url: string | null
-  auth_provider: 'email' | 'apple' | 'google'
+  auth_provider: 'apple' | 'google'
   created_at: string
   disclosures_accepted_at: string | null
   kyc_status: 'not_started' | 'pending' | 'approved' | 'declined' | 'needs_review'

@@ -154,6 +154,11 @@ export function Drawer({
 
             {/* Settings button */}
             <button
+              onClick={() => {
+                impact('light')
+                navigate('/settings')
+                onClose()
+              }}
               className="p-2.5 hover:bg-gray-200 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
               aria-label="Settings"
             >

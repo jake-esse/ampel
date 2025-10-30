@@ -13,6 +13,7 @@ import Login from './pages/Login'
 import Chat from './pages/Chat'
 import Apps from './pages/Apps'
 import AppsAmpel from './pages/AppsAmpel'
+import Settings from './pages/Settings'
 import EquityIntro from './pages/EquityIntro'
 import PlanSelection from './pages/PlanSelection'
 import { Disclosures } from './pages/Disclosures'
@@ -210,6 +211,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <AppsAmpel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           }
         />
