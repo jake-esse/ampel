@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils'
 import type { Message as MessageType } from '@/types/chat'
 import { MarkdownMessage } from './MarkdownMessage'
+import { MessageCitations } from './MessageCitations'
 
 interface MessageProps {
   message: MessageType
@@ -49,7 +50,10 @@ export function Message({ message }: MessageProps) {
         {isAssistant && (
           <div className="font-serif">
             {message.content ? (
-              <MarkdownMessage content={message.content} />
+              <MarkdownMessage
+                content={message.content}
+                citations={message.citations}
+              />
             ) : message.isStreaming ? (
               // Animated typing indicator with bouncing dots
               <div className="flex items-center gap-1 py-1">
@@ -65,6 +69,11 @@ export function Message({ message }: MessageProps) {
             {/* Streaming cursor */}
             {message.isStreaming && message.content && (
               <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse" />
+            )}
+
+            {/* Citations (only show for non-streaming assistant messages) */}
+            {!message.isStreaming && message.citations && (
+              <MessageCitations citations={message.citations} />
             )}
           </div>
         )}

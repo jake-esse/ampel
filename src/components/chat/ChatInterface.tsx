@@ -174,7 +174,7 @@ export function ChatInterface({
       setStreamingStatus('loading')
 
       // Stream response from AI - use the messages we determined above
-      const { textStream, tokenUsage } = streamChatResponse({
+      const { textStream, tokenUsage, citations } = streamChatResponse({
         messages: [...messagesToUse, userMessage],
         reasoning,
         webSearch,
@@ -211,25 +211,38 @@ export function ChatInterface({
         return
       }
 
-      // Mark streaming as complete
+      // Get token usage and citations
+      const tokens = await tokenUsage
+      const citationUrls = await citations
+
+      // Mark streaming as complete and add citations to message
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === assistantMessageId
-            ? { ...msg, isStreaming: false, timestamp: new Date() }
+            ? {
+                ...msg,
+                isStreaming: false,
+                timestamp: new Date(),
+                tokenCount: tokens ?? undefined,
+                citations: citationUrls.length > 0 ? citationUrls : undefined,
+              }
             : msg
         )
       )
 
       setStreamingStatus('idle')
 
-      // Get token usage and save assistant message to database
-      const tokens = await tokenUsage
-      saveMessage(activeConversationId, 'assistant', fullContent, tokens).catch(
-        (err) => {
-          console.error('Failed to save assistant message:', err)
-          // Don't show error to user - message is already displayed
-        }
-      )
+      // Save assistant message to database with citations
+      saveMessage(
+        activeConversationId,
+        'assistant',
+        fullContent,
+        tokens,
+        citationUrls.length > 0 ? citationUrls : undefined
+      ).catch((err) => {
+        console.error('Failed to save assistant message:', err)
+        // Don't show error to user - message is already displayed
+      })
     } catch (err) {
       console.error('Streaming error:', err)
       const errorMsg = getErrorMessage(err)

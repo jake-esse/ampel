@@ -12,13 +12,15 @@ import type { Message as FrontendMessage } from '@/types/chat'
  * @param role - 'user' or 'assistant'
  * @param content - The message content
  * @param tokensUsed - Optional token count (null for user messages)
+ * @param citations - Optional array of source URLs from web search
  * @returns The created message
  */
 export async function saveMessage(
   conversationId: string,
   role: 'user' | 'assistant',
   content: string,
-  tokensUsed?: number | null
+  tokensUsed?: number | null,
+  citations?: string[]
 ): Promise<DbMessage> {
   const { data, error } = await supabase
     .from('messages')
@@ -27,6 +29,7 @@ export async function saveMessage(
       role,
       content,
       tokens_used: tokensUsed ?? null,
+      citations: citations ?? null,
     })
     .select()
     .single()
@@ -116,6 +119,8 @@ export function convertDbMessageToFrontend(dbMessage: DbMessage): FrontendMessag
     role: dbMessage.role,
     content: dbMessage.content,
     timestamp: new Date(dbMessage.created_at),
+    tokenCount: dbMessage.tokens_used ?? undefined,
+    citations: dbMessage.citations ?? undefined,
     // Don't include isStreaming - that's only for active streaming messages
   }
 }

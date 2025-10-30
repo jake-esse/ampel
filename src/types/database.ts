@@ -40,6 +40,7 @@ export type Message = {
   role: 'user' | 'assistant'
   content: string
   tokens_used: number | null
+  citations: string[] | null
   created_at: string
 }
 
