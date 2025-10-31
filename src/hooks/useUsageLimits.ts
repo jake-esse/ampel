@@ -76,7 +76,7 @@ export function useUsageLimits(): UseUsageLimitsReturn {
         : null
 
       const isActive = profile.subscription_status === 'active' ||
-        (periodEnd && now < periodEnd)
+        (periodEnd !== null && now < periodEnd)
 
       setSubscriptionActive(isActive)
 
@@ -95,7 +95,7 @@ export function useUsageLimits(): UseUsageLimitsReturn {
       let status = await getUsageStatus(user.id)
 
       // If no usage tracking exists, initialize it
-      if (!status && userTier) {
+      if (!status) {
         await initializeUsageTracking(user.id, userTier)
         status = await getUsageStatus(user.id)
       }
