@@ -454,6 +454,13 @@ Deno.serve(async (req) => {
         tier: profile.selected_subscription_tier,
         created_via: 'checkout_session_function'
       },
+      // CRITICAL: Ensure subscription inherits metadata for webhook handlers
+      subscription_data: {
+        metadata: {
+          user_id: userId, // CRITICAL: subscription.updated webhook needs this
+          tier: profile.selected_subscription_tier
+        }
+      },
       // return_url is required by Stripe API but we use onComplete callback instead
       return_url: `${origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}`
     })

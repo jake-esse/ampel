@@ -35,8 +35,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Check if we're navigating from KYC after approval
   const kycJustApproved = location.state?.kycJustApproved === true
 
+  // Check if we're navigating from checkout after onboarding completion
+  const onboardingJustCompleted = location.state?.onboardingJustCompleted === true
+
   // Fetch user profile when authenticated
-  // ONLY refetch when user ID changes, tier was just selected, disclosures were just accepted, or KYC was just approved
+  // ONLY refetch when user ID changes, tier was just selected, disclosures were just accepted, KYC was just approved, or onboarding was just completed
   // Do NOT refetch on every route change to prevent unnecessary loading states
   useEffect(() => {
     async function fetchProfile() {
@@ -135,6 +138,32 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         return
       }
 
+      // If onboarding was just completed, fetch fresh profile immediately
+      // The database has already been updated by Stripe's webhook by this point
+      if (onboardingJustCompleted) {
+        setProfileLoading(true)
+
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+
+          if (!error && data) {
+            console.log('✅ ProtectedRoute: Fetched fresh profile after onboarding completion, onboarding_completed_at:', data.onboarding_completed_at)
+            setProfile(data)
+          } else {
+            console.error('❌ ProtectedRoute: Error fetching profile after onboarding:', error)
+          }
+        } catch (error) {
+          console.error('❌ ProtectedRoute: Exception fetching profile after onboarding:', error)
+        } finally {
+          setProfileLoading(false)
+        }
+        return
+      }
+
       // If we already have a profile for this user, don't refetch
       // This prevents unnecessary loading states when navigating between routes
       if (profile && profile.id === user.id) {
@@ -193,7 +222,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
 
     fetchProfile()
-  }, [user?.id, disclosuresJustAccepted, tierJustSelected, kycJustApproved]) // Only depend on user ID and navigation states
+  }, [user?.id, disclosuresJustAccepted, tierJustSelected, kycJustApproved, onboardingJustCompleted]) // Only depend on user ID and navigation states
 
   // Show loading spinner while checking auth status or profile
   if (authLoading || profileLoading) {

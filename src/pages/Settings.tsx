@@ -7,6 +7,7 @@ import { impact } from '@/hooks/useHaptics'
 import { getUserInitials } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { applyReferralCode, validateReferralCode } from '@/lib/database/subscriptions'
+import { cancelSubscription } from '@/lib/database/account'
 import { UsageIndicator } from '@/components/UsageIndicator'
 import type { Profile } from '@/types/database'
 
@@ -26,6 +27,10 @@ export default function Settings() {
   const [copiedOwnCode, setCopiedOwnCode] = useState(false)
   const [referralCodeInput, setReferralCodeInput] = useState('')
   const [applyingCode, setApplyingCode] = useState(false)
+
+  // Subscription cancellation
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancellingSubscription, setCancellingSubscription] = useState(false)
 
   // Fetch user profile
   useEffect(() => {
@@ -155,6 +160,40 @@ export default function Settings() {
       })
     } finally {
       setApplyingCode(false)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    setCancellingSubscription(true)
+
+    try {
+      await impact('medium')
+      await cancelSubscription()
+
+      // Refresh profile to show updated status
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+
+      setShowCancelConfirm(false)
+      showToast({
+        type: 'info',
+        message: 'Subscription cancelled. You can continue using Ampel until the end of your billing period.'
+      })
+    } catch (error) {
+      console.error('Error cancelling subscription:', error)
+      const message = error instanceof Error ? error.message : 'Failed to cancel subscription'
+      showToast({
+        type: 'error',
+        message
+      })
+    } finally {
+      setCancellingSubscription(false)
     }
   }
 
@@ -352,6 +391,63 @@ export default function Settings() {
             </>
           )}
         </button>
+
+        {/* Cancel Subscription Section */}
+        {profile?.subscription_status === 'active' && profile?.stripe_subscription_id && (
+          <div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-gray-900 mb-2">Subscription</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Cancel your subscription. You'll continue to have access until the end of your billing period.
+            </p>
+
+            {!showCancelConfirm ? (
+              <button
+                onClick={() => setShowCancelConfirm(true)}
+                className="w-full min-h-[48px] px-6 py-3 bg-white hover:bg-gray-50 text-gray-900 rounded-xl font-medium flex items-center justify-center gap-3 transition-all duration-150 active:scale-[0.98] border border-[#E5E3DD]"
+              >
+                <span>Cancel Subscription</span>
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm font-medium text-blue-900 mb-1">
+                    Cancel your subscription?
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    You'll keep access until {profile.subscription_period_end ? new Date(profile.subscription_period_end).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'the end of your billing period'}. Your shares and account data will remain intact.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowCancelConfirm(false)}
+                    disabled={cancellingSubscription}
+                    className="flex-1 min-h-[48px] px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-xl font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Keep Subscription
+                  </button>
+                  <button
+                    onClick={handleCancelSubscription}
+                    disabled={cancellingSubscription}
+                    className="flex-1 min-h-[48px] px-6 py-3 bg-[#30302E] hover:bg-primary-700 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {cancellingSubscription ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Cancelling...</span>
+                      </>
+                    ) : (
+                      <span>Yes, Cancel</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   )

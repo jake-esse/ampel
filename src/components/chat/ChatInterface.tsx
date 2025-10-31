@@ -293,7 +293,7 @@ export function ChatInterface({
         prev.filter((msg) => !msg.isStreaming)
       )
     }
-  }, [messages, reasoning, webSearch, onTitleStreaming, onTitleComplete, showToast])
+  }, [messages, reasoning, webSearch, onTitleStreaming, onTitleComplete, showToast, incrementUsage])
 
   // Handle sending a message (creates conversation if needed)
   const handleSendMessage = async (content: string) => {

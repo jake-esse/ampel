@@ -58,6 +58,8 @@ interface Subscription {
   id: string
   customer: string
   status: string
+  current_period_end: number
+  cancel_at_period_end: boolean
   metadata: {
     user_id?: string
     tier?: string
@@ -283,6 +285,7 @@ function timingSafeEqual(a: string, b: string): boolean {
  * 3. Grants subscription shares (5-40 based on tier)
  * 4. Processes referral bonuses if applicable
  * 5. Sets onboarding_completed_at to mark onboarding complete
+ * 6. Stores subscription_period_end for access control
  *
  * Security:
  * - Only called after signature verification passes
@@ -292,11 +295,13 @@ function timingSafeEqual(a: string, b: string): boolean {
  *
  * @param event - The Stripe checkout.session.completed event
  * @param supabase - Supabase admin client (service role)
+ * @param stripe - Stripe client instance
  * @returns Response object indicating success or failure
  */
 async function handlePaymentSuccess(
   event: StripeEvent,
-  supabase: any
+  supabase: any,
+  stripe: Stripe
 ): Promise<WebhookResponse> {
   console.log('🎉 Processing payment success event:', event.id)
 
@@ -375,6 +380,19 @@ async function handlePaymentSuccess(
     }
   }
 
+  // Fetch subscription details from Stripe to get current_period_end
+  console.log('📡 Fetching subscription details from Stripe...')
+  let subscriptionPeriodEnd: string | null = null
+
+  try {
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId as string)
+    subscriptionPeriodEnd = new Date(stripeSubscription.current_period_end * 1000).toISOString()
+    console.log(`📅 Subscription period ends: ${subscriptionPeriodEnd}`)
+  } catch (error) {
+    console.error('❌ Failed to fetch subscription from Stripe:', error)
+    // Continue anyway - period_end can be updated later via subscription.updated event
+  }
+
   // Update profile with subscription details and complete onboarding
   console.log('💾 Updating profile with subscription details...')
 
@@ -383,6 +401,7 @@ async function handlePaymentSuccess(
     .update({
       stripe_subscription_id: subscriptionId,
       subscription_status: 'active',
+      subscription_period_end: subscriptionPeriodEnd,
       onboarding_completed_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     })
@@ -590,11 +609,15 @@ async function handleSubscriptionUpdated(
   const userId = subscription.metadata?.user_id
   const subscriptionId = subscription.id
   const status = subscription.status
+  const cancelAtPeriodEnd = subscription.cancel_at_period_end
+  const currentPeriodEnd = subscription.current_period_end
 
   console.log('📋 Subscription details:', {
     userId,
     subscriptionId,
-    status
+    status,
+    cancelAtPeriodEnd,
+    currentPeriodEnd: new Date(currentPeriodEnd * 1000).toISOString()
   })
 
   if (!userId) {
@@ -631,12 +654,16 @@ async function handleSubscriptionUpdated(
       ourStatus = status
   }
 
-  console.log(`💾 Updating subscription status: ${status} → ${ourStatus}`)
+  // Convert period end to ISO string
+  const subscriptionPeriodEnd = new Date(currentPeriodEnd * 1000).toISOString()
+
+  console.log(`💾 Updating subscription: status=${status} → ${ourStatus}, period_end=${subscriptionPeriodEnd}, cancel_at_period_end=${cancelAtPeriodEnd}`)
 
   const { error: updateError } = await supabase
     .from('profiles')
     .update({
       subscription_status: ourStatus,
+      subscription_period_end: subscriptionPeriodEnd,
       updated_at: new Date().toISOString()
     })
     .eq('stripe_subscription_id', subscriptionId)
@@ -871,12 +898,24 @@ Deno.serve(async (req) => {
       }
     })
 
+    // Initialize Stripe client for fetching subscription details
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeSecretKey) {
+      console.error('🚨 STRIPE_SECRET_KEY not configured')
+      throw new Error('Stripe not configured')
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2024-12-18.acacia',
+      httpClient: Stripe.createFetchHttpClient()
+    })
+
     // Route event to appropriate handler
     let response: WebhookResponse
 
     switch (event.type) {
       case 'checkout.session.completed':
-        response = await handlePaymentSuccess(event, supabase)
+        response = await handlePaymentSuccess(event, supabase, stripe)
         break
 
       case 'customer.subscription.updated':

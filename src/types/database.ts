@@ -17,6 +17,7 @@ export type Profile = {
   // Subscription and equity fields
   selected_subscription_tier: 'starter' | 'plus' | 'pro' | 'max' | null
   subscription_status: 'inactive' | 'active' | 'cancelled' | 'past_due'
+  subscription_period_end: string | null // When the current Stripe subscription period ends
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
   shares_balance: number
