@@ -90,9 +90,12 @@ export default function CheckoutSuccess() {
           if (pollInterval) clearInterval(pollInterval)
           if (timeoutTimer) clearTimeout(timeoutTimer)
 
-          // Navigate to chat
+          // Navigate to chat with state flag to trigger profile refetch
           // Use replace to prevent back button returning here
-          navigate('/chat', { replace: true })
+          navigate('/chat', {
+            replace: true,
+            state: { onboardingJustCompleted: true }
+          })
         }
       } catch (err) {
         console.error('Unexpected error during polling:', err)
@@ -113,8 +116,11 @@ export default function CheckoutSuccess() {
       setIsPolling(false)
       if (pollInterval) clearInterval(pollInterval)
 
-      // Navigate to chat anyway
-      navigate('/chat', { replace: true })
+      // Navigate to chat anyway with state flag
+      navigate('/chat', {
+        replace: true,
+        state: { onboardingJustCompleted: true }
+      })
     }
 
     // Check immediately on mount (webhook might have completed already)

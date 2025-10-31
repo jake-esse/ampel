@@ -68,15 +68,23 @@ export function useUsageLimits(): UseUsageLimitsReturn {
         return
       }
 
-      // Check if subscription is active
-      const isActive = profile.subscription_status === 'active'
+      // Check if subscription is active OR user is within their paid period
+      // This allows cancelled users to continue using until their billing period ends
+      const now = new Date()
+      const periodEnd = profile.subscription_period_end
+        ? new Date(profile.subscription_period_end)
+        : null
+
+      const isActive = profile.subscription_status === 'active' ||
+        (periodEnd && now < periodEnd)
+
       setSubscriptionActive(isActive)
 
       // Get subscription tier
       const userTier = profile.selected_subscription_tier
       setTier(userTier)
 
-      // If subscription is not active, don't load usage (block all features)
+      // If subscription is not active and period has expired, don't load usage (block all features)
       if (!isActive) {
         setUsageStatus(null)
         setLoading(false)
