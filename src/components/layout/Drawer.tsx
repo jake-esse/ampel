@@ -86,7 +86,7 @@ export function Drawer({
           }}
         >
           {/* Logo and title */}
-          <div className="flex items-end">
+          <div className="flex items-end -ml-2.5">
             <Sprout
               className="w-8 h-8 text-gray-900"
               style={{ transform: 'translateY(-4px)' }}
@@ -115,11 +115,11 @@ export function Drawer({
               navigate('/apps')
               onClose()
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-200 rounded-lg transition-all duration-150 active:scale-95 min-h-[44px]"
+            className="w-full flex items-center gap-2 py-1.5 hover:bg-gray-200 rounded-2xl transition-all duration-150 active:scale-95 min-h-[48px]"
             aria-label="Apps"
           >
-            <Grid3x3 className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-700">Apps</span>
+            <Grid3x3 className="w-7 h-7 text-gray-600" />
+            <span className="text-[17px] font-medium text-gray-900">Apps</span>
           </button>
         </div>
 
@@ -136,7 +136,7 @@ export function Drawer({
         </div>
 
         {/* Profile section */}
-        <div className="border-t-[0.5px] border-[#E5E3DD] px-6 py-4">
+        <div className="border-t-[0.5px] border-[#E5E3DD] px-6 py-2">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {/* Avatar with initials */}

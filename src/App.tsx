@@ -1,14 +1,12 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { StatusBar, Style } from '@capacitor/status-bar'
-import { App as CapacitorApp } from '@capacitor/app'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { ConversationProvider } from './contexts/ConversationContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { ToastContainer } from './components/ui/ToastContainer'
 import { isNativePlatform, isAndroid } from './hooks/usePlatform'
 import { useNetworkStatus } from './hooks/useNetworkStatus'
-import { useAuth } from './hooks/useAuth'
 import Login from './pages/Login'
 import Chat from './pages/Chat'
 import Apps from './pages/Apps'
@@ -31,53 +29,9 @@ function AppContent() {
   // Initialize network status monitoring (shows toasts on connection changes)
   useNetworkStatus()
 
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { user, loading: authLoading } = useAuth()
-
-  // Force navigation to /chat for authenticated users when app launches
-  // This ensures users always start fresh, even if the browser cached a different route
-  useEffect(() => {
-    // Check if this is a fresh app launch (not just a navigation)
-    const isAppLaunch = !sessionStorage.getItem('appLaunched')
-
-    if (isAppLaunch) {
-      sessionStorage.setItem('appLaunched', 'true')
-
-      // Wait for auth to load
-      if (authLoading) return
-
-      // Only redirect authenticated users who are on a chat-related page with a conversation ID
-      if (user && location.pathname.startsWith('/chat/')) {
-        // Force navigate to fresh chat on app launch
-        navigate('/chat', { replace: true })
-      }
-    }
-  }, [authLoading, user]) // Watch auth changes to ensure redirect happens when user loads
-
-  // Clear session storage when app goes to background (for fresh start next time)
-  useEffect(() => {
-    if (!isNativePlatform()) return
-
-    let listener: any
-
-    const setupListener = async () => {
-      listener = await CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-        if (!isActive) {
-          // App went to background - clear the session storage
-          sessionStorage.removeItem('appLaunched')
-        }
-      })
-    }
-
-    setupListener()
-
-    return () => {
-      if (listener) {
-        listener.remove()
-      }
-    }
-  }, [])
+  // REMOVED: Redirect to /chat on app launch
+  // Users should return to whatever conversation they were on when they closed the app
+  // The browser/webview preserves the route automatically
 
   // Initialize status bar on mount
   useEffect(() => {

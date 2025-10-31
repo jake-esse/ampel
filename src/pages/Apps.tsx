@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Sprout } from 'lucide-react'
 import { impact } from '@/hooks/useHaptics'
 import { submitWaitlistEmail } from '@/lib/database/waitlist'
 
@@ -121,7 +121,7 @@ export default function Apps() {
             <div className="flex items-center gap-4">
               {/* App Icon */}
               <div className="w-16 h-16 bg-[#30302E] rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-3xl">🌱</span>
+                <Sprout className="w-9 h-9 text-white" />
               </div>
 
               {/* App Info */}

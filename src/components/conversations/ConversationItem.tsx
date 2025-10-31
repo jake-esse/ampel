@@ -104,7 +104,7 @@ export function ConversationItem({
       onTouchCancel={handleTouchCancel}
       onClick={handleClick}
       className={cn(
-        'w-full px-4 py-1.5 text-left transition-colors min-h-[48px]',
+        'w-full -mx-2.5 px-2.5 py-2.5 text-left transition-colors min-h-[48px]',
         'flex items-center rounded-2xl',
         'hover:bg-gray-200/50 active:bg-gray-200',
         isActive && 'bg-[#30302E] text-white',
@@ -112,7 +112,7 @@ export function ConversationItem({
       )}
     >
       <span className={cn(
-        'text-base font-medium line-clamp-1',
+        'text-[17px] font-medium line-clamp-1',
         isActive ? 'text-white' : 'text-gray-900'
       )}>
         {truncatedTitle}

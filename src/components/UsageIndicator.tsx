@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { useUsageLimits } from '@/hooks/useUsageLimits'
 import { formatResetDate, getTierDisplayName } from '@/lib/subscription-limits'
-import { MessageSquare, Globe, Brain } from 'lucide-react'
+import { MessageSquare, Globe, Brain, ChevronDown, ChevronUp } from 'lucide-react'
 
 /**
  * Usage indicator component - displays current usage metrics and limits
  * Shows progress for messages, web searches, and reasoning queries
+ * Collapsible by default to save space
  */
 export function UsageIndicator() {
   const { usageStatus, featureAccess, loading, subscriptionActive } = useUsageLimits()
+  const [isExpanded, setIsExpanded] = useState(false)
 
   if (loading) {
     return (
@@ -53,17 +56,28 @@ export function UsageIndicator() {
   }
 
   return (
-    <div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Usage & Limits</h3>
-        <span className="text-sm font-medium text-gray-600">
-          {getTierDisplayName(effective_tier)} Plan
-        </span>
-      </div>
+    <div className="bg-white border border-[#E5E3DD] rounded-xl shadow-sm overflow-hidden">
+      {/* Clickable Header */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <h3 className="text-base font-semibold text-gray-900">Usage & Limits</h3>
+          <span className="text-sm font-medium text-gray-600">
+            {getTierDisplayName(effective_tier)}
+          </span>
+        </div>
+        {isExpanded ? (
+          <ChevronUp className="w-5 h-5 text-gray-500" />
+        ) : (
+          <ChevronDown className="w-5 h-5 text-gray-500" />
+        )}
+      </button>
 
-      {/* Usage metrics */}
-      <div className="space-y-4">
+      {/* Usage metrics - only show when expanded */}
+      {isExpanded && (
+        <div className="px-6 pb-6 space-y-4 border-t border-[#E5E3DD] pt-4">
         {/* Messages */}
         <div>
           <div className="flex items-center justify-between mb-2">
@@ -124,14 +138,14 @@ export function UsageIndicator() {
             </div>
           </div>
         )}
+        {/* Billing period info */}
+        <div className="pt-4 border-t border-[#E5E3DD]">
+          <p className="text-xs text-gray-500">
+            Resets {formatResetDate(period_ends)}
+          </p>
+        </div>
       </div>
-
-      {/* Billing period info */}
-      <div className="mt-4 pt-4 border-t border-[#E5E3DD]">
-        <p className="text-xs text-gray-500">
-          Resets {formatResetDate(period_ends)}
-        </p>
-      </div>
+      )}
     </div>
   )
 }
