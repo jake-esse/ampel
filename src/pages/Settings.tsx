@@ -7,6 +7,7 @@ import { impact } from '@/hooks/useHaptics'
 import { getUserInitials } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { applyReferralCode, validateReferralCode } from '@/lib/database/subscriptions'
+import { UsageIndicator } from '@/components/UsageIndicator'
 import type { Profile } from '@/types/database'
 
 /**
@@ -247,6 +248,9 @@ export default function Settings() {
             </div>
           </div>
         </div>
+
+        {/* Usage & Limits */}
+        <UsageIndicator />
 
         {/* Your Referral Code */}
         <div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm">

@@ -3,6 +3,7 @@ import { ArrowUp, Brain, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { impact } from '@/hooks/useHaptics'
 import { useKeyboardAnimation } from '@/hooks/useKeyboardAnimation'
+import type { FeatureAccess } from '@/types/usage'
 
 interface ChatInputProps {
   onSend: (content: string) => void
@@ -13,6 +14,7 @@ interface ChatInputProps {
   onWebSearchToggle?: () => void
   autoFocus?: boolean
   placeholder?: string
+  featureAccess?: FeatureAccess
 }
 
 /**
@@ -28,6 +30,7 @@ export function ChatInput({
   onWebSearchToggle,
   autoFocus = false,
   placeholder = 'Type a message...',
+  featureAccess,
 }: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -135,8 +138,8 @@ export function ChatInput({
           {/* Controls row - buttons at bottom */}
           <div className="flex items-center justify-between px-3 pb-3 pt-1">
             <div className="flex items-center gap-2">
-              {/* Reasoning toggle */}
-              {onReasoningToggle && (
+              {/* Reasoning toggle - only show if user has access */}
+              {onReasoningToggle && featureAccess?.has_reasoning && (
                 <button
                   onClick={() => {
                     impact('light')
@@ -159,8 +162,8 @@ export function ChatInput({
                 </button>
               )}
 
-              {/* Web search toggle */}
-              {onWebSearchToggle && (
+              {/* Web search toggle - only show if user has access */}
+              {onWebSearchToggle && featureAccess?.has_web_search && (
                 <button
                   onClick={() => {
                     impact('light')

@@ -11,6 +11,7 @@ import {
 import { streamConversationTitle } from '@/lib/ai/streaming-titles'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/hooks/useAuth'
+import { useUsageLimits } from '@/hooks/useUsageLimits'
 import { useNavigate } from 'react-router-dom'
 import { useConversations } from '@/hooks/useConversations'
 import type { Message, StreamingStatus } from '@/types/chat'
@@ -43,6 +44,15 @@ export function ChatInterface({
   const { user } = useAuth()
   const navigate = useNavigate()
   const { addConversation } = useConversations()
+
+  // Usage limits and feature access
+  const {
+    checkLimit,
+    incrementUsage,
+    getLimitMessage,
+    featureAccess,
+    subscriptionActive,
+  } = useUsageLimits()
 
   // Track if component is mounted to prevent state updates after unmount
   const isMountedRef = useRef(true)
@@ -243,6 +253,26 @@ export function ChatInterface({
         console.error('Failed to save assistant message:', err)
         // Don't show error to user - message is already displayed
       })
+
+      // Increment usage counters after successful message (background operation)
+      incrementUsage('message').catch((err) => {
+        console.error('Failed to increment message usage:', err)
+        // Don't show error to user - message was successful
+      })
+
+      // Increment web search usage if it was used
+      if (webSearch) {
+        incrementUsage('web_search').catch((err) => {
+          console.error('Failed to increment web search usage:', err)
+        })
+      }
+
+      // Increment reasoning usage if it was used
+      if (reasoning) {
+        incrementUsage('reasoning').catch((err) => {
+          console.error('Failed to increment reasoning usage:', err)
+        })
+      }
     } catch (err) {
       console.error('Streaming error:', err)
       const errorMsg = getErrorMessage(err)
@@ -264,6 +294,59 @@ export function ChatInterface({
 
   // Handle sending a message (creates conversation if needed)
   const handleSendMessage = async (content: string) => {
+    // Check subscription status
+    if (!subscriptionActive) {
+      showToast({
+        type: 'error',
+        message: 'Your subscription has expired. Please resubscribe to continue using Ampel.',
+      })
+      return
+    }
+
+    // Check usage limits before sending
+    try {
+      // Always check message limit
+      const messageCheck = await checkLimit('message')
+      if (!messageCheck.allowed) {
+        showToast({
+          type: 'error',
+          message: getLimitMessage('message', messageCheck),
+        })
+        return
+      }
+
+      // Check web search limit if web search is enabled
+      if (webSearch) {
+        const webSearchCheck = await checkLimit('web_search')
+        if (!webSearchCheck.allowed) {
+          showToast({
+            type: 'error',
+            message: getLimitMessage('web_search', webSearchCheck),
+          })
+          return
+        }
+      }
+
+      // Check reasoning limit if reasoning is enabled
+      if (reasoning) {
+        const reasoningCheck = await checkLimit('reasoning')
+        if (!reasoningCheck.allowed) {
+          showToast({
+            type: 'error',
+            message: getLimitMessage('reasoning', reasoningCheck),
+          })
+          return
+        }
+      }
+    } catch (err) {
+      console.error('Error checking usage limits:', err)
+      showToast({
+        type: 'error',
+        message: 'Failed to check usage limits. Please try again.',
+      })
+      return
+    }
+
     // If conversation already exists, send directly
     if (conversationId) {
       // Don't pass messages parameter here - let it use the current state
@@ -321,6 +404,7 @@ export function ChatInterface({
         onWebSearchToggle={() => setWebSearch(!webSearch)}
         autoFocus={messages.length === 0}
         placeholder={messages.length === 0 ? 'How can I help?' : 'Type a message...'}
+        featureAccess={featureAccess}
       />
     </div>
   )
