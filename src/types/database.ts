@@ -70,3 +70,17 @@ export type AmpelQuestion = {
   created_at: string
   updated_at: string
 }
+
+export type UsageTracking = {
+  id: string
+  user_id: string
+  billing_period_start: string
+  billing_period_end: string
+  messages_used: number
+  web_searches_used: number
+  reasoning_queries_used: number
+  effective_tier: 'starter' | 'plus' | 'pro' | 'max' | null
+  last_reset_at: string | null
+  created_at: string
+  updated_at: string
+}
