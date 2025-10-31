@@ -98,7 +98,7 @@ export const markdownComponents: Components = {
 
   // Paragraphs
   p: ({ node, ...props }) => (
-    <p {...props} className="mb-3 last:mb-0 leading-relaxed" />
+    <p {...props} className="mb-4 last:mb-0 leading-snug" />
   ),
 
   // Headings
@@ -123,12 +123,12 @@ export const markdownComponents: Components = {
 
   // Lists
   ul: ({ node, ...props }) => (
-    <ul {...props} className="list-disc list-inside mb-3 space-y-1" />
+    <ul {...props} className="list-disc list-inside mb-2 space-y-0.5" />
   ),
   ol: ({ node, ...props }) => (
-    <ol {...props} className="list-decimal list-inside mb-3 space-y-1" />
+    <ol {...props} className="list-decimal list-inside mb-2 space-y-0.5" />
   ),
-  li: ({ node, ...props }) => <li {...props} className="leading-relaxed" />,
+  li: ({ node, ...props }) => <li {...props} className="leading-snug" />,
 
   // Block quotes
   blockquote: ({ node, ...props }) => (

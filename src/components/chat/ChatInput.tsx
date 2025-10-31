@@ -53,9 +53,6 @@ export function ChatInput({
   const handleSend = () => {
     const trimmed = input.trim()
     if (trimmed && !disabled) {
-      // Trigger haptic feedback for send action (iOS only)
-      impact('medium')
-
       onSend(trimmed)
       setInput('')
       // Reset textarea height

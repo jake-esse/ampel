@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, MessageCircle } from 'lucide-react'
+import { ChevronLeft, MessageCircle, Sprout } from 'lucide-react'
 import { impact } from '@/hooks/useHaptics'
 import { Accordion } from '@/components/ui/Accordion'
 import { DiscussionBoard } from '@/components/ampel/DiscussionBoard'
@@ -153,7 +153,7 @@ Deadline Changes: Investors will be notified of any accelerated offering deadlin
           <div className="flex items-center gap-4">
             {/* App Icon */}
             <div className="w-20 h-20 bg-[#30302E] rounded-xl flex items-center justify-center flex-shrink-0">
-              <span className="text-4xl">🌱</span>
+              <Sprout className="w-11 h-11 text-white" />
             </div>
 
             {/* App Info */}

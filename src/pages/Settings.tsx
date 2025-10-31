@@ -160,7 +160,7 @@ export default function Settings() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFCFA] flex items-center justify-center">
+      <div className="h-screen bg-[#FDFCFA] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-gray-300 border-t-primary-600 rounded-full animate-spin" />
           <p className="text-sm text-gray-600">Loading settings...</p>
@@ -187,10 +187,10 @@ export default function Settings() {
   const providerName = profile?.auth_provider === 'apple' ? 'Apple' : 'Google'
 
   return (
-    <div className="min-h-screen bg-[#FDFCFA] flex flex-col">
+    <div className="h-screen bg-[#FDFCFA] flex flex-col overflow-hidden">
       {/* Header */}
       <header
-        className="bg-white border-b-[0.5px] border-[#E5E3DD]"
+        className="bg-white border-b-[0.5px] border-[#E5E3DD] flex-shrink-0"
         style={{
           paddingTop: 'max(1rem, env(safe-area-inset-top))'
         }}
@@ -208,9 +208,9 @@ export default function Settings() {
         </div>
       </header>
 
-      {/* Content */}
+      {/* Content - Scrollable */}
       <main
-        className="flex-1 px-4 py-6 space-y-6"
+        className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
         style={{
           paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))'
         }}
@@ -248,9 +248,6 @@ export default function Settings() {
             </div>
           </div>
         </div>
-
-        {/* Usage & Limits */}
-        <UsageIndicator />
 
         {/* Your Referral Code */}
         <div className="bg-white border border-[#E5E3DD] rounded-xl p-6 shadow-sm">
@@ -330,6 +327,9 @@ export default function Settings() {
             </div>
           </div>
         )}
+
+        {/* Usage & Limits */}
+        <UsageIndicator />
 
         {/* Sign Out Button */}
         <button

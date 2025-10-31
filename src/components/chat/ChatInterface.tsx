@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useUsageLimits } from '@/hooks/useUsageLimits'
 import { useNavigate } from 'react-router-dom'
 import { useConversations } from '@/hooks/useConversations'
+import { impact } from '@/hooks/useHaptics'
 import type { Message, StreamingStatus } from '@/types/chat'
 
 interface ChatInterfaceProps {
@@ -201,6 +202,8 @@ export function ChatInterface({
 
         if (isFirstChunk) {
           setStreamingStatus('streaming')
+          // Trigger haptic feedback when AI response begins
+          impact('medium')
           isFirstChunk = false
         }
 

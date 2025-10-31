@@ -77,7 +77,7 @@ export function MarkdownMessage({ content, citations }: MarkdownMessageProps) {
   const processedContent = preprocessCitations(content, citations)
 
   return (
-    <div className="markdown-content text-xl leading-tight">
+    <div className="markdown-content text-xl">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize]}

@@ -86,8 +86,8 @@ export function MessageList({ messages }: MessageListProps) {
           }
 
           // Calculate scroll position to place user message at top of viewport
-          // Account for container's padding-top (safe area + 1rem)
-          const containerPaddingTop = 16 // 1rem = 16px base (safe area adds more dynamically)
+          // Account for container's padding-top (0.5rem / 8px)
+          const containerPaddingTop = 8 // 0.5rem = 8px
           const scrollTop = element.offsetTop - containerPaddingTop
 
           console.log('🟢 [MessageList] SCROLLING TO POSITION:', scrollTop)
@@ -118,10 +118,8 @@ export function MessageList({ messages }: MessageListProps) {
     <div
       ref={containerRef}
       onClick={handleTapToDismiss}
-      className="flex-1 overflow-y-auto px-2 py-4"
+      className="flex-1 overflow-y-auto px-2 pt-2"
       style={{
-        // iOS safe area support for top (notch/dynamic island)
-        paddingTop: 'max(1rem, env(safe-area-inset-top))',
         // Dynamic bottom padding to compensate for keyboard and fixed input
         // When keyboard closed: 140px for fixed input
         // When keyboard open: 140px + keyboardHeight to compensate for viewport shrink
